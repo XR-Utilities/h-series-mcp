@@ -1,0 +1,102 @@
+import type { ServiceDef } from "../types.js";
+
+export const hIndex: ServiceDef = {
+  id: "h-index",
+  label: "H-Index",
+  baseUrl: "https://h-index.xr-utilities.ai",
+  manifestUrl: "https://h-index.xr-utilities.ai/.well-known/agent-card.json",
+  knownSchemaVersions: ["0.1.0"],
+  tools: [
+    {
+      name: "h_index_search",
+      description:
+        "Free. Search the H-Index capability registry by keyword or semantic query. " +
+        "Returns ranked listings of MCP servers, tool endpoints, and agent APIs with " +
+        "endpoint URL, description, pricing, owner, and MCP manifest snapshot.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          q: {
+            type: "string",
+            description: "Search query (keyword or natural language capability description).",
+          },
+          category: {
+            type: "string",
+            description: "Filter by category.",
+            enum: ["developer-tools", "data", "ai-models", "infra", "productivity", "other"],
+          },
+          limit: {
+            type: "number",
+            description: "Max results (default 20, max 100).",
+          },
+        },
+        additionalProperties: false,
+      },
+      method: "GET",
+      path: "/endpoints",
+      authMode: "free",
+    },
+    {
+      name: "h_index_get_listing",
+      description:
+        "Free. Get a specific H-Index listing by its ID (topic/sequence format, e.g. 0.0.10490172/42). " +
+        "Returns full detail including MCP manifest, pricing, owner, registration date, and expiry.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          id: {
+            type: "string",
+            description: "Listing ID in topic/sequence format.",
+          },
+        },
+        required: ["id"],
+        additionalProperties: false,
+      },
+      method: "GET",
+      path: "/endpoints?id={id}",
+      authMode: "free",
+    },
+    {
+      name: "h_index_register",
+      description:
+        "Paid ($10.00 USD). Register a new service on H-Index. Requires a TIP-712/EIP-712 " +
+        "signature and x402 payment. Pass the signed receipt body fields plus payment_signature.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          apiName: { type: "string", description: "Service display name." },
+          endpointUrl: { type: "string", description: "Service URL (https)." },
+          description: { type: "string", description: "What the service does." },
+          pricing: { type: "string", description: "Pricing info (JSON string)." },
+          category: { type: "string", description: "Category." },
+          mcpManifest: { type: "string", description: "MCP manifest JSON snapshot (optional)." },
+          ownerAccountId: { type: "string", description: "CAIP-10 identity of the publisher." },
+          registryTopicId: { type: "string", description: "HCS registry topic ID." },
+          issuedAt: { type: "number", description: "Unix timestamp of signature." },
+          signature: { type: "string", description: "TIP-712/EIP-712 hex signature." },
+          payment_signature: { type: "string", description: "x402 payment header (base64)." },
+        },
+        required: ["apiName", "endpointUrl", "description", "pricing", "ownerAccountId", "registryTopicId", "issuedAt", "signature"],
+        additionalProperties: false,
+      },
+      method: "POST",
+      path: "/register",
+      authMode: "inline_x402",
+      bodyFromArgs: true,
+      stripArgs: ["payment_signature"],
+    },
+    {
+      name: "h_index_config",
+      description:
+        "Free. Get H-Index registry configuration: topic ID, pricing, accepted payment methods.",
+      inputSchema: {
+        type: "object",
+        properties: {},
+        additionalProperties: false,
+      },
+      method: "GET",
+      path: "/config",
+      authMode: "free",
+    },
+  ],
+};
