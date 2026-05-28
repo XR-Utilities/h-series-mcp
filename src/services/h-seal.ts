@@ -102,6 +102,19 @@ export const hSeal: ServiceDef = {
             type: "string",
             description: "(v0.2) Currency for amountPaid, e.g. \"USD\", \"USDC\", \"HBAR\".",
           },
+          providerSignature: {
+            type: "string",
+            description: "(v0.3) Provider's hex signature over {providerIdentity, requestHash, responseHash, providerIssuedAt}. Requires providerSignatureScheme and providerIssuedAt to also be set.",
+          },
+          providerSignatureScheme: {
+            type: "string",
+            description: "(v0.3) Signature scheme used by the provider. v0.3 supports \"ed25519\" only.",
+            enum: ["ed25519"],
+          },
+          providerIssuedAt: {
+            type: "number",
+            description: "(v0.3) Unix timestamp when the provider signed the attestation.",
+          },
         },
         required: [
           "taskId", "serviceEndpoint", "requestHash", "responseHash",
