@@ -1,10 +1,15 @@
 import type { ServiceDef } from "../types.js";
 
+// Allow override so the MCP server can reach H-Seal over Railway's private
+// network when deployed alongside it. Avoids Cloudflare bot challenges on
+// the public hostname. Defaults to the public URL for stdio use.
+const H_SEAL_BASE = process.env["H_SEAL_BACKEND_URL"] || "https://h-seal.xr-utilities.ai";
+
 export const hSeal: ServiceDef = {
   id: "h-seal",
   label: "H-Seal",
-  baseUrl: "https://h-seal.xr-utilities.ai",
-  manifestUrl: "https://h-seal.xr-utilities.ai/config",
+  baseUrl: H_SEAL_BASE,
+  manifestUrl: `${H_SEAL_BASE}/config`,
   knownSchemaVersions: ["0.1.0"],
   tools: [
     {
