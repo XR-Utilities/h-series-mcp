@@ -73,6 +73,30 @@ export const hSeal: ServiceDef = {
             type: "string",
             description: "x402 payment header (base64-encoded envelope).",
           },
+          schemaVersion: {
+            type: "number",
+            description: "Receipt schema version. Omit or 1 for v0.1. Set to 2 to include the v0.2 fields below in the signed payload.",
+          },
+          method: {
+            type: "string",
+            description: "(v0.2) Operation name, e.g. \"tools/call:xrpl_send_payment\" or \"POST /v1/translate\".",
+          },
+          httpStatus: {
+            type: "number",
+            description: "(v0.2) HTTP status code of the underlying call (REST integrations).",
+          },
+          correlationId: {
+            type: "string",
+            description: "(v0.2) Free-form ID linking related receipts across a multi-step workflow.",
+          },
+          amountPaid: {
+            type: "string",
+            description: "(v0.2) Amount paid to the provider for the underlying service, as a decimal string. Separate from the H-Seal anchoring fee.",
+          },
+          amountCurrency: {
+            type: "string",
+            description: "(v0.2) Currency for amountPaid, e.g. \"USD\", \"USDC\", \"HBAR\".",
+          },
         },
         required: [
           "taskId", "serviceEndpoint", "requestHash", "responseHash",
