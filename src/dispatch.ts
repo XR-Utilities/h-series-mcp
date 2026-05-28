@@ -13,37 +13,14 @@
  *   free          - no payment ever. Reserved for pure-metadata
  *                   wrappers and health endpoints.
  *
- * Operator-issued bypass: if MCP_BYPASS_KEY is set on the MCP process
- * AND an inline_x402 tool call includes a matching `_bypass_key` in
- * args, the dispatcher forwards it as the dev-bypass header on the
- * underlying service (rate-limited at the MCP transport layer).
+ * (No operator-issued bypass: underlying services have no dev-bypass
+ * header; pay or use the admin Bearer token directly against the API.)
  */
-
-import { timingSafeEqual } from "node:crypto";
 
 import { findToolOwner } from "./services/index.js";
 import { SERVER_VERSION } from "./version.js";
 
-
-function timingSafeStringEqual(a: string, b: string): boolean {
-  // Length-prefix to avoid the timingSafeEqual length-mismatch throw.
-  // The length check itself is a timing oracle of 1 bit (caller can
-  // learn the secret length); acceptable trade-off matching how
-  // hmac.compare_digest works on the Python side.
-  const ab = Buffer.from(a);
-  const bb = Buffer.from(b);
-  if (ab.length !== bb.length) return false;
-  return timingSafeEqual(ab, bb);
-}
-
 export interface DispatchOptions {
-  /**
-   * Global bypass key from the MCP_BYPASS_KEY env var. When the caller
-   * also presents this key (via the `_bypass_key` reserved tool arg),
-   * the dispatcher uses it as the dev-bypass header on the underlying
-   * service. Rate-limited by the caller (see transport-http).
-   */
-  bypassKey?: string;
   /** Override base URLs (useful for tests pointing at localhost). */
   baseUrlOverride?: (serviceId: string) => string | undefined;
   /**
@@ -83,12 +60,11 @@ export async function dispatchTool(
     return encodeURIComponent(String(args[key]));
   });
 
-  // Strip args reserved for transport-level concerns (payment_signature,
-  // _bypass_key) AND args already consumed by path params. What remains
-  // is the actual API payload.
+  // Strip args reserved for transport-level concerns (payment_signature)
+  // AND args already consumed by path params. What remains is the
+  // actual API payload.
   const stripSet = new Set<string>([
     ...(tool.stripArgs ?? []),
-    "_bypass_key",
     "payment_signature",
   ]);
   const apiArgs: Record<string, unknown> = {};
@@ -98,34 +74,22 @@ export async function dispatchTool(
     apiArgs[k] = v;
   }
 
-  // Auth resolution. The caller can either supply payment_signature
-  // (which we forward as x-payment) or _bypass_key (which we verify
-  // against MCP_BYPASS_KEY before forwarding to the underlying service
-  // as its dev-bypass header).
+  // Auth resolution. The caller supplies payment_signature, which we
+  // forward as the x-payment header on inline_x402 tools.
   const headers: Record<string, string> = {
     Accept: "application/json",
     "User-Agent": opts.userAgent ?? `h-series-mcp/${SERVER_VERSION}`,
   };
 
   const callerPaymentSig = stringArg(args.payment_signature);
-  const callerBypassKey = stringArg(args._bypass_key);
 
-  if (tool.authMode === "inline_x402") {
-    if (callerPaymentSig) {
-      headers["x-payment"] = callerPaymentSig;
-    } else if (callerBypassKey && opts.bypassKey && timingSafeStringEqual(callerBypassKey, opts.bypassKey)) {
-      // Operator-issued bypass. Forward as the dev-bypass header that
-      // the underlying services accept.
-      headers["x-payment"] = callerBypassKey;
-    } else {
-      // No auth supplied. Fire the request anyway so the caller gets
-      // the real 402 challenge back from the underlying service - that
-      // tells them what payment_signature shape to send next time. The
-      // MCP server is a transparent proxy here, not an enforcer.
-    }
+  if (tool.authMode === "inline_x402" && callerPaymentSig) {
+    headers["x-payment"] = callerPaymentSig;
   }
-  // free falls through with no x-payment header. Free is reserved for
-  // pure-metadata wrappers and health endpoints.
+  // No auth supplied for an inline_x402 tool? Fire the request anyway
+  // so the caller gets the real 402 challenge back from the underlying
+  // service. The MCP server is a transparent proxy, not an enforcer.
+  // free tools fall through with no x-payment header.
 
   // Build the request URL (query for GET, body for POST).
   let url = baseUrl + path;
@@ -137,7 +101,7 @@ export async function dispatchTool(
       params.append(k, String(v));
     }
     const qs = params.toString();
-    if (qs) url += "?" + qs;
+    if (qs) url += (url.includes("?") ? "&" : "?") + qs;
   } else if (tool.method === "POST") {
     if (tool.bodyFromArgs) {
       headers["Content-Type"] = "application/json";
@@ -165,9 +129,14 @@ export async function dispatchTool(
     parsed = text;
   }
 
-  // Surface 402 challenges + 4xx/5xx errors as structured errors so
-  // the LLM can reason over them and retry with a payment_signature.
+  // 4xx (including 402): soft-return so the LLM can reason over the
+  // structured challenge and retry with a payment_signature.
+  // 5xx: throw so the caller (server.ts) surfaces this as isError:true
+  // instead of presenting upstream failure as a successful tool result.
   if (!res.ok) {
+    if (res.status >= 500) {
+      throw new Error(`upstream ${res.status}: ${typeof parsed === "string" ? parsed : JSON.stringify(parsed)}`);
+    }
     return {
       _error: true,
       status: res.status,

@@ -11,8 +11,8 @@
  *     }
  *   }
  *
- * Single-tenant: the user's MCP_BYPASS_KEY (if set) and any pre-signed
- * payment_signature live on their machine, never leave it.
+ * Single-tenant: any pre-signed payment_signature the user supplies
+ * lives on their machine, never leaves it.
  */
 
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
@@ -21,7 +21,6 @@ import { SERVER_VERSION } from "../version.js";
 
 export async function runStdio(): Promise<void> {
   const server = buildServer({
-    bypassKey: process.env["MCP_BYPASS_KEY"],
     userAgent: `h-series-mcp/${SERVER_VERSION} (stdio)`,
   });
   const transport = new StdioServerTransport();

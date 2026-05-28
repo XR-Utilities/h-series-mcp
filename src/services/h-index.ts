@@ -84,6 +84,7 @@ export const hIndex: ServiceDef = {
       authMode: "inline_x402",
       bodyFromArgs: true,
       stripArgs: ["payment_signature"],
+      priceUsd: 10.0,
     },
     {
       name: "h_index_config",

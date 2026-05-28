@@ -86,6 +86,7 @@ export const hSeal: ServiceDef = {
       authMode: "inline_x402",
       bodyFromArgs: true,
       stripArgs: ["payment_signature"],
+      priceUsd: 0.05,
     },
     {
       name: "h_seal_get_receipt",

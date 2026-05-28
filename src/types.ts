@@ -61,6 +61,12 @@ export interface ToolDef {
    * regular field.
    */
   stripArgs?: string[];
+  /**
+   * USD price per call for inline_x402 tools. Surfaced in tool _meta
+   * so MCP clients can show the LLM/user what the call will cost.
+   * Must match the backend service's /config price. Free tools omit.
+   */
+  priceUsd?: number;
 }
 
 export interface ServiceDef {

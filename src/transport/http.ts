@@ -12,8 +12,7 @@
  *
  * Auth: every paid tool call still requires the caller to provide
  * their own payment_signature in the tool args. The hosted endpoint
- * is a transparent proxy, NOT a subsidy. Operator-issued bypass via
- * MCP_BYPASS_KEY env var is rate-limited per-IP at the proxy layer.
+ * is a transparent proxy, NOT a subsidy. Rate-limited per-IP.
  */
 
 import express, { type Request, type Response } from "express";
@@ -23,6 +22,7 @@ import { SERVICES, ALL_TOOLS } from "../services/index.js";
 import { SERVER_VERSION } from "../version.js";
 const RATE_WINDOW_MS = 60_000;
 const RATE_LIMIT_PER_WINDOW = 60; // generous; agents typically fire bursts
+const RATE_BUCKET_PRUNE_MS = 5 * 60_000;
 
 interface RateBucket {
   count: number;
@@ -31,10 +31,10 @@ interface RateBucket {
 const rateBuckets = new Map<string, RateBucket>();
 
 function rateLimit(req: Request, res: Response): boolean {
-  const ip = (req.headers["x-forwarded-for"] ?? req.socket.remoteAddress ?? "unknown")
-    .toString()
-    .split(",")[0]!
-    .trim();
+  // Use req.ip, populated from XFF by Express only when `trust proxy`
+  // is enabled (we set it below). Without that, an unauthenticated
+  // caller could rotate XFF values to evade the per-IP limit.
+  const ip = req.ip ?? req.socket.remoteAddress ?? "unknown";
   const now = Date.now();
   let bucket = rateBuckets.get(ip);
   if (!bucket || bucket.resetAt < now) {
@@ -49,8 +49,21 @@ function rateLimit(req: Request, res: Response): boolean {
   return true;
 }
 
+// Walk the bucket map periodically and drop entries whose window has
+// long since expired. Prevents unbounded growth from churning IPs.
+setInterval(() => {
+  const now = Date.now();
+  for (const [ip, bucket] of rateBuckets) {
+    if (bucket.resetAt < now) rateBuckets.delete(ip);
+  }
+}, RATE_BUCKET_PRUNE_MS).unref();
+
 export async function runHttp(port: number): Promise<void> {
   const app = express();
+  // Trust exactly one upstream proxy (Railway's edge). Lets req.ip
+  // reflect the real client address from XFF while ignoring caller-
+  // supplied XFF when the request didn't actually transit a proxy.
+  app.set("trust proxy", 1);
   app.use(express.json({ limit: "1mb" }));
 
   app.get("/", (_req, res) => {
@@ -190,7 +203,6 @@ export async function runHttp(port: number): Promise<void> {
     let transport: StreamableHTTPServerTransport | null = null;
     try {
       const mcpServer = buildServer({
-        bypassKey: process.env["MCP_BYPASS_KEY"],
         userAgent: `h-series-mcp/${SERVER_VERSION} (http)`,
       });
       transport = new StreamableHTTPServerTransport({

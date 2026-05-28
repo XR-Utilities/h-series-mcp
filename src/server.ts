@@ -21,12 +21,8 @@ export function buildServer(opts: DispatchOptions = {}): Server {
     tools: ALL_TOOLS.map((t) => {
       const pricing =
         t.authMode === "free"
-          ? { paid: false, priceUsd: 0 }
-          : t.name === "h_index_register"
-            ? { paid: true, priceUsd: 10.0, settlement: "x402_inline" }
-            : t.name === "h_seal_anchor"
-              ? { paid: true, priceUsd: 0.05, settlement: "x402_inline" }
-              : { paid: true, priceUsd: 0.10, settlement: "x402_inline" };
+          ? { paid: false as const, priceUsd: 0 }
+          : { paid: true as const, priceUsd: t.priceUsd ?? 0, settlement: "x402_inline" };
       return {
         name: t.name,
         description: t.description,
