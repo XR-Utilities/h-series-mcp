@@ -87,6 +87,54 @@ export const hIndex: ServiceDef = {
       priceUsd: 10.0,
     },
     {
+      name: "h_index_renew",
+      description:
+        "Paid ($5.00 USD). Renew an existing H-Index listing before it expires, extending its term. " +
+        "Requires a TIP-712/EIP-712 signature from the listing owner and x402 payment. Pass the " +
+        "signed body fields plus payment_signature.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          endpointId: { type: "string", description: "ID of the listing to renew." },
+          ownerAccountId: { type: "string", description: "CAIP-10 identity of the listing owner." },
+          registryTopicId: { type: "string", description: "HCS registry topic ID." },
+          issuedAt: { type: "number", description: "Unix timestamp of signature." },
+          signature: { type: "string", description: "TIP-712/EIP-712 hex signature over the renewal." },
+          payment_signature: { type: "string", description: "x402 payment header (base64)." },
+        },
+        required: ["endpointId", "ownerAccountId", "registryTopicId", "issuedAt", "signature"],
+        additionalProperties: false,
+      },
+      method: "POST",
+      path: "/renew",
+      authMode: "inline_x402",
+      bodyFromArgs: true,
+      stripArgs: ["payment_signature"],
+      priceUsd: 5.0,
+    },
+    {
+      name: "h_index_revoke",
+      description:
+        "Free. Revoke (remove) an H-Index listing you own. Requires a TIP-712/EIP-712 signature " +
+        "from the listing owner; no payment. Pass the signed body fields.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          endpointId: { type: "string", description: "ID of the listing to revoke." },
+          ownerAccountId: { type: "string", description: "CAIP-10 identity of the listing owner." },
+          registryTopicId: { type: "string", description: "HCS registry topic ID." },
+          issuedAt: { type: "number", description: "Unix timestamp of signature." },
+          signature: { type: "string", description: "TIP-712/EIP-712 hex signature over the revocation." },
+        },
+        required: ["endpointId", "ownerAccountId", "registryTopicId", "issuedAt", "signature"],
+        additionalProperties: false,
+      },
+      method: "POST",
+      path: "/revoke",
+      authMode: "free",
+      bodyFromArgs: true,
+    },
+    {
       name: "h_index_config",
       description:
         "Free. Get H-Index registry configuration: topic ID, pricing, accepted payment methods.",
