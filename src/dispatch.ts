@@ -19,6 +19,7 @@
 
 import { findToolOwner } from "./services/index.js";
 import { SERVER_VERSION } from "./version.js";
+import { log, redact } from "./logger.js";
 
 export interface DispatchOptions {
   /** Override base URLs (useful for tests pointing at localhost). */
@@ -131,16 +132,23 @@ export async function dispatchTool(
 
   // 4xx (including 402): soft-return so the LLM can reason over the
   // structured challenge and retry with a payment_signature.
-  // 5xx: throw so the caller (server.ts) surfaces this as isError:true
-  // instead of presenting upstream failure as a successful tool result.
+  // 5xx: do not relay the upstream body to the caller. A 5xx body can carry
+  // an internal stack trace, an unmasked identifier, or echoed request data;
+  // forwarding it verbatim is the log-hygiene gap this closes. Log the
+  // redacted body server-side for our own debugging and throw a generic
+  // status so server.ts surfaces isError:true without the raw body.
   if (!res.ok) {
     if (res.status >= 500) {
-      throw new Error(`upstream ${res.status}: ${typeof parsed === "string" ? parsed : JSON.stringify(parsed)}`);
+      log.warn("upstream 5xx", { tool: toolName, service: service.id, status: res.status, body: redact(parsed) });
+      throw new Error(`upstream ${res.status}`);
     }
     return {
       _error: true,
       status: res.status,
-      response: parsed,
+      // redact() scrubs any sensitive-keyed field an upstream 4xx might echo
+      // (a payment envelope, a token) while leaving the structured challenge
+      // an x402 402 carries intact.
+      response: redact(parsed),
       hint:
         res.status === 402
           ? "This endpoint requires x402 payment. Provide a base64-encoded x402 envelope as payment_signature."

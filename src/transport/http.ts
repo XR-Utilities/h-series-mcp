@@ -20,6 +20,7 @@ import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/
 import { buildServer } from "../server.js";
 import { SERVICES, ALL_TOOLS } from "../services/index.js";
 import { SERVER_VERSION } from "../version.js";
+import { log } from "../logger.js";
 const RATE_WINDOW_MS = 60_000;
 const RATE_LIMIT_PER_WINDOW = 60; // generous; agents typically fire bursts
 const RATE_BUCKET_PRUNE_MS = 5 * 60_000;
@@ -217,10 +218,12 @@ export async function runHttp(port: number): Promise<void> {
       await mcpServer.connect(transport);
       await transport.handleRequest(req, res, req.body);
     } catch (e) {
-      // eslint-disable-next-line no-console
-      console.error("[mcp] handleRequest threw:", (e as Error).stack ?? e);
+      // Log the detail server-side; do not return it to the client. The
+      // thrown message can carry an upstream status or internal context that
+      // does not belong in a public error body.
+      log.error("mcp handleRequest threw", { detail: (e as Error).message, stack: (e as Error).stack });
       if (!res.headersSent) {
-        res.status(500).json({ error: "mcp_handle_failed", detail: (e as Error).message });
+        res.status(500).json({ error: "mcp_handle_failed" });
       }
     }
   });
@@ -228,12 +231,10 @@ export async function runHttp(port: number): Promise<void> {
   // Surface unhandled rejections in the dispatcher / SDK so we don't get
   // mystery 500s from Express's default error handler with no body.
   process.on("unhandledRejection", (reason) => {
-    // eslint-disable-next-line no-console
-    console.error("[mcp] unhandledRejection:", reason);
+    log.error("unhandledRejection", { reason: reason instanceof Error ? reason.message : String(reason) });
   });
 
   app.listen(port, () => {
-    // eslint-disable-next-line no-console
-    console.log(`h-series-mcp listening on :${port} (http)`);
+    log.info("listening", { port, transport: "http" });
   });
 }

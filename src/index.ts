@@ -14,6 +14,7 @@
 import { runStdio } from "./transport/stdio.js";
 import { runHttp } from "./transport/http.js";
 import { validateAllServices } from "./validate.js";
+import { log } from "./logger.js";
 
 function parseArgs(argv: string[]): { transport: "stdio" | "http"; port: number; skipValidate: boolean } {
   let transport: "stdio" | "http" =
@@ -38,21 +39,13 @@ function parseArgs(argv: string[]): { transport: "stdio" | "http"; port: number;
 async function main(): Promise<void> {
   const { transport, port, skipValidate } = parseArgs(process.argv.slice(2));
 
-  // Schema-discipline check. On stdio we run silently and only complain
-  // on stderr (Claude Desktop captures stdout for the JSON-RPC stream).
-  // On HTTP we log normally.
+  // Schema-discipline check. The logger writes to stderr on every transport,
+  // so the JSON-RPC stdout stream stays clean without a per-transport switch.
   if (!skipValidate) {
     const results = await validateAllServices({ strict: false });
-    const log = transport === "stdio" ? console.error : console.log;
     for (const r of results) {
-      if (r.errors.length) {
-        log(`[validate] ${r.service}: ERRORS`);
-        r.errors.forEach((e) => log(`  ${e}`));
-      }
-      if (r.warnings.length) {
-        log(`[validate] ${r.service}: warnings`);
-        r.warnings.forEach((w) => log(`  ${w}`));
-      }
+      if (r.errors.length) log.warn("schema validation errors", { service: r.service, errors: r.errors });
+      if (r.warnings.length) log.info("schema validation warnings", { service: r.service, warnings: r.warnings });
     }
     const anyError = results.some((r) => r.errors.length);
     if (anyError && process.env["MCP_FAIL_ON_DRIFT"] === "1") {
@@ -68,6 +61,6 @@ async function main(): Promise<void> {
 }
 
 main().catch((e) => {
-  console.error("h-series-mcp fatal:", e);
+  log.error("fatal", { detail: (e as Error).message, stack: (e as Error).stack });
   process.exit(1);
 });
