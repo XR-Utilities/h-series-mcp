@@ -30,7 +30,7 @@ const threshold = thresholdFromEnv();
 // against the whole key. Covers payment envelopes, auth material, and the
 // secret-bearing fields an upstream body might carry.
 const SENSITIVE_KEY =
-  /^(x[-_]?payment|payment[-_]?signature|authorization|x[-_]?admin[-_]?secret|admin[-_]?secret|cookie|set[-_]?cookie|api[-_]?key|secret|token|password|passphrase|private[-_]?key|seed|mnemonic)$/i;
+  /^(x[-_]?payment|payment[-_]?signature|authorization|x[-_]?admin[-_]?secret|admin[-_]?secret|cookie|set[-_]?cookie|api[-_]?key|secret|token|password|passphrase|private[-_]?key|seed|mnemonic|credential|client[-_]?secret)$/i;
 
 const REDACTED = "[redacted]";
 const MAX_DEPTH = 6;
