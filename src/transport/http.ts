@@ -78,7 +78,7 @@ export async function runHttp(port: number): Promise<void> {
       well_known_manifest: "/.well-known/agents.json",
       llms_discovery: "/llms.txt",
       docs: "https://github.com/XR-Utilities/h-series-mcp",
-      portfolio: "https://xr-utilities.io",
+      portfolio: "https://xrpl-utilities.com",
     });
   });
 
@@ -105,7 +105,7 @@ export async function runHttp(port: number): Promise<void> {
       "operator treasury wallet. The MCP server holds no wallets and takes no cut.",
     service_status: "live",
     endpoints: {
-      base_url: "https://mcp.xr-utilities.io",
+      base_url: "https://mcp.xr-utilities.ai",
       mcp: "/mcp",
       discovery: "/llms.txt",
       manifest: "/agents.json",
@@ -125,7 +125,7 @@ export async function runHttp(port: number): Promise<void> {
       base_url: s.baseUrl,
       manifest_url: s.manifestUrl,
     })),
-    homepage: "https://xr-utilities.io",
+    homepage: "https://xrpl-utilities.com",
     repository: "https://github.com/XR-Utilities/h-series-mcp",
     license: "MIT",
   });
@@ -147,7 +147,7 @@ export async function runHttp(port: number): Promise<void> {
       "",
       "## Connect",
       "- Hosted (any MCP client, including Claude Desktop with HTTP support):",
-      "  POST JSON-RPC + SSE to `https://mcp.xr-utilities.io/mcp`",
+      "  POST JSON-RPC + SSE to `https://mcp.xr-utilities.ai/mcp`",
       "- Local (Claude Desktop config):",
       "  ```",
       "  npm i @xr-utilities/h-series-mcp",
@@ -165,9 +165,9 @@ export async function runHttp(port: number): Promise<void> {
       "multiple chains.",
       "",
       "## Discovery",
-      "- Manifest:    https://mcp.xr-utilities.io/agents.json",
+      "- Manifest:    https://mcp.xr-utilities.ai/agents.json",
       "- Source:      https://github.com/XR-Utilities/h-series-mcp",
-      "- Portfolio:   https://xr-utilities.io",
+      "- Portfolio:   https://xrpl-utilities.com",
       "",
       "## What this is NOT",
       "Not a wallet. Not a custodian. Not an editorial product. Not investment",

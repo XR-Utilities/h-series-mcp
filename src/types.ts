@@ -74,7 +74,7 @@ export interface ServiceDef {
   id: string;
   /** Human label for logs / errors. */
   label: string;
-  /** Live HTTPS base. e.g. "https://h-index.xr-utilities.io". */
+  /** Live HTTPS base. e.g. "https://h-index.xr-utilities.ai". */
   baseUrl: string;
   /** /agents.json URL -- fetched at startup for schema-discipline check. */
   manifestUrl: string;
