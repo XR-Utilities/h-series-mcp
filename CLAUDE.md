@@ -15,8 +15,10 @@ collector. Never put secrets, keys, or proprietary enforcement detail into this
 public repo, in code, comments, logs, or docs.
 
 ## Git and authorship
-- Author identity: `XRPL-Utilities <xr-utilities@proton.me>`. Never a personal
-  email.
+- Commit author identity: `XRPL-Utilities <xrpl-utilities@proton.me>` (the
+  XR-Utilities GitHub account). Never a personal email.
+- H-Series contact / correspondence email is `xr-utilities@proton.me` (docs,
+  manifests, public contact fields), distinct from the commit author email.
 - Commits, PRs, and code contain no AI or assistant attribution of any kind: no
   "authored by", "co-authored by", or "generated with" referencing Claude, AI,
   or an assistant, and no such markers in code comments. Authorship is the human
