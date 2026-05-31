@@ -13,3 +13,11 @@ repo is worked on from the H-Grant codespace where both are checked out, and the
 master security architecture doc (`SECURITY-ARCHITECTURE.md`, private) is the
 collector. Never put secrets, keys, or proprietary enforcement detail into this
 public repo, in code, comments, logs, or docs.
+
+## Git and authorship
+- Author identity: `XRPL-Utilities <xr-utilities@proton.me>`. Never a personal
+  email.
+- Commits, PRs, and code contain no AI or assistant attribution of any kind: no
+  "authored by", "co-authored by", or "generated with" referencing Claude, AI,
+  or an assistant, and no such markers in code comments. Authorship is the human
+  contributor and the org only.
