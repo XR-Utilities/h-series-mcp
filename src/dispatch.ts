@@ -66,6 +66,7 @@ export async function dispatchTool(
   // actual API payload.
   const stripSet = new Set<string>([
     ...(tool.stripArgs ?? []),
+    ...Object.values(tool.headerArgs ?? {}),
     "payment_signature",
   ]);
   const apiArgs: Record<string, unknown> = {};
@@ -86,6 +87,16 @@ export async function dispatchTool(
 
   if (tool.authMode === "inline_x402" && callerPaymentSig) {
     headers["x-payment"] = callerPaymentSig;
+  }
+
+  // Map any declared headerArgs onto request headers (e.g. a signed-read proof
+  // as X-Authorization). Objects are JSON-stringified; the arg was stripped from
+  // the body/query above.
+  for (const [headerName, argName] of Object.entries(tool.headerArgs ?? {})) {
+    const v = args[argName];
+    if (v !== undefined && v !== null) {
+      headers[headerName] = typeof v === "string" ? v : JSON.stringify(v);
+    }
   }
   // No auth supplied for an inline_x402 tool? Fire the request anyway
   // so the caller gets the real 402 challenge back from the underlying

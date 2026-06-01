@@ -67,6 +67,13 @@ export interface ToolDef {
    * Must match the backend service's /config price. Free tools omit.
    */
   priceUsd?: number;
+  /**
+   * Map a request header name to an input-arg name. The arg's value is sent as
+   * that header (objects are JSON-stringified) and stripped from the body/query.
+   * Used for signed-read auth headers such as X-Authorization, which the caller
+   * supplies as a structured arg rather than a transport detail.
+   */
+  headerArgs?: Record<string, string>;
 }
 
 export interface ServiceDef {
