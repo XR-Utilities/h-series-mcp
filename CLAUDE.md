@@ -23,3 +23,10 @@ public repo, in code, comments, logs, or docs.
   "authored by", "co-authored by", or "generated with" referencing Claude, AI,
   or an assistant, and no such markers in code comments. Authorship is the human
   contributor and the org only.
+
+## Working principle: no guessing
+Work and troubleshoot from facts, never assumptions. Ground every change, fix,
+and diagnosis in the actual code, data, logs, config, and observed behavior:
+read the source, run it, check the output, and verify against reality before
+acting or concluding. If something can't be verified, say so plainly instead of
+guessing. A plausible answer that hasn't been checked is a liability.
