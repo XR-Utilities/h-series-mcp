@@ -17,7 +17,9 @@
     "start:stdio": "node dist/index.js --transport stdio",
     "start:http": "node dist/index.js --transport http",
     "dev": "tsc --watch",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "startup": "bash scripts/startup.sh",
+    "closeout": "bash scripts/closeout.sh"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",
@@ -37,7 +39,7 @@
     "hedera",
     "hcs",
     "x402",
-    "ai-agents",
+    "agents",
     "h-index",
     "h-seal",
     "receipts",
