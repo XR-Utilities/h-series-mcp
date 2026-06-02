@@ -131,6 +131,124 @@ export const hSeal: ServiceDef = {
       priceUsd: 0.05,
     },
     {
+      name: "h_seal_anchor_request",
+      description:
+        "Free. Anchor a request envelope (the notary: the inbound counterpart to a receipt, " +
+        "proving what an agent was asked to do). Requires a TIP-712/EIP-712 signed envelope. " +
+        "An optional recipient acknowledgement may be included. Returns the request ID and " +
+        "consensus timestamp. Fails with 503 if the server has no request topic configured.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          requestId: {
+            type: "string",
+            description: "Unique identifier for the inbound request.",
+          },
+          targetEndpoint: {
+            type: "string",
+            description: "The service being called, ideally an H-Index listing id (topic/sequence) rather than a raw URL.",
+          },
+          requestHash: {
+            type: "string",
+            description: "SHA-256 hex hash of the request payload.",
+          },
+          callerIdentity: {
+            type: "string",
+            description: "CAIP-10 identity of the calling agent (or Hedera account id).",
+          },
+          recipientIdentity: {
+            type: "string",
+            description: "CAIP-10 identity of the recipient the request is addressed to.",
+          },
+          sentAt: {
+            type: "number",
+            description: "Unix timestamp when the request was sent (also the signature freshness time).",
+          },
+          requestTopicId: {
+            type: "string",
+            description: "HCS request-envelope topic ID (must match the server's configured topic).",
+          },
+          signature: {
+            type: "string",
+            description: "Caller's signature over {kind:\"anchor_request\", payload} (EIP-712 RequestEnvelope for EVM; canonical-JSON ed25519 for Hedera/XRPL/Solana).",
+          },
+          recipientAck: {
+            type: "string",
+            description: "Optional. Recipient's hex signature over {kind:\"request_ack\", payload:{recipientIdentity, requestId, requestHash, ackIssuedAt}}. Hedera Ed25519 only. Requires recipientAckScheme and recipientAckIssuedAt.",
+          },
+          recipientAckScheme: {
+            type: "string",
+            description: "Optional. Signature scheme for recipientAck. v1 supports \"ed25519\" only.",
+            enum: ["ed25519"],
+          },
+          recipientAckIssuedAt: {
+            type: "number",
+            description: "Optional. Unix timestamp when the recipient signed the acknowledgement.",
+          },
+        },
+        required: [
+          "requestId", "targetEndpoint", "requestHash", "callerIdentity",
+          "recipientIdentity", "sentAt", "requestTopicId", "signature",
+        ],
+        additionalProperties: false,
+      },
+      method: "POST",
+      path: "/anchor-request",
+      authMode: "free",
+      bodyFromArgs: true,
+    },
+    {
+      name: "h_seal_get_request",
+      description:
+        "Free. Retrieve a single anchored request envelope by its ID (topic/sequence format). " +
+        "Returns the envelope details including identities, hashes, timing, and any recipient acknowledgement.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          id: {
+            type: "string",
+            description: "Request envelope ID in topic/sequence format.",
+          },
+        },
+        required: ["id"],
+        additionalProperties: false,
+      },
+      method: "GET",
+      path: "/requests/{id}",
+      authMode: "free",
+    },
+    {
+      name: "h_seal_list_requests",
+      description:
+        "Free. List anchored request envelopes. Filter by caller or recipient identity. " +
+        "Returns paginated results with a cursor for subsequent pages.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          caller: {
+            type: "string",
+            description: "Filter by caller identity (CAIP-10 format).",
+          },
+          recipient: {
+            type: "string",
+            description: "Filter by recipient identity (CAIP-10 format).",
+          },
+          limit: {
+            type: "number",
+            description: "Max results per page (default 50, max 100).",
+          },
+          cursor: {
+            type: "string",
+            description: "Pagination cursor from a previous response.",
+          },
+        },
+        additionalProperties: false,
+      },
+      method: "GET",
+      path: "/requests",
+      authMode: "free",
+    },
+    {
       name: "h_seal_get_receipt",
       description:
         "Free. Retrieve a single anchored receipt by its ID (topic/sequence format, e.g. 0.0.12345/42). " +
