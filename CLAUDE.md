@@ -14,6 +14,17 @@ master security architecture doc (`SECURITY-ARCHITECTURE.md`, private) is the
 collector. Never put secrets, keys, or proprietary enforcement detail into this
 public repo, in code, comments, logs, or docs.
 
+## Financial change discipline
+Same arrangement as the security log: this PUBLIC repo keeps NO financial log of
+its own. After any change that affects what a priced tool charges or fronts (a new
+or removed priced tool, a changed declared price, or a change to which backend
+endpoint a tool maps to), write a `pending` entry to the private H-Grant repo as
+`MCP-FINANCIAL-LOG.md`; in practice this repo is worked on from the H-Grant
+codespace where both are checked out. The master `FINANCIAL-ARCHITECTURE.md`
+(private, in H-Grant) is the collector and folds those entries in. This server
+holds no wallet and takes no cut: it forwards the caller's x402 `payment_signature`
+to the backend, where settlement lands. Never put secrets or keys in this public repo.
+
 ## Git and authorship
 - Commit author identity: `XRPL-Utilities <xrpl-utilities@proton.me>` (the
   XR-Utilities GitHub account). Never a personal email.
