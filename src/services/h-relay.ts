@@ -139,5 +139,83 @@ export const hRelay: ServiceDef = {
       path: "/heartbeat",
       authMode: "free",
     },
+    {
+      name: "h_relay_relay",
+      description:
+        "Paid ($0.05 USD). Context proxy / verifiable agent egress: fetch context from a " +
+        "registry-known source (an H-Index listing id; arbitrary URLs are refused). H-Relay " +
+        "fetches it under SSRF-safe controls, optionally scans the inbound content for " +
+        "prompt-injection and redacts outbound secrets/PII per policy, returns the content, and " +
+        "anchors a tamper-evident provenance record (request hash + response hash) to a public " +
+        "ledger. Requires a TIP-712 relay authorization signed by the caller and x402 payment. " +
+        "Returns the content, content type, the request/response hashes, applied sanitization, " +
+        "and a relay record id (poll h_relay_get_relay for the on-chain anchor ref).",
+      inputSchema: {
+        type: "object",
+        properties: {
+          from: {
+            type: "string",
+            description: "Caller identity (CAIP-10). Must match the authorization signer.",
+          },
+          target: {
+            type: "string",
+            description: "An H-Index listing id (topicId/seq) to fetch from; resolves to its registered endpoint.",
+          },
+          authorization: {
+            type: "object",
+            description: "TIP-712 relay authorization signed by the caller over { from, target }.",
+            properties: {
+              scheme: { type: "string", description: "Signing scheme, e.g. tip712 or ed25519." },
+              signature: { type: "string", description: "Signature over the relay action." },
+              issuedAt: { type: "number", description: "Unix seconds the signature was issued." },
+            },
+            required: ["scheme", "signature", "issuedAt"],
+          },
+          policy: {
+            type: "object",
+            description: "Optional sanitization toggles, both default off.",
+            properties: {
+              scanInbound: {
+                type: "boolean",
+                description: "Scan the fetched content for prompt-injection and flag findings.",
+              },
+              redactOutbound: {
+                type: "boolean",
+                description: "Redact secrets/PII from the returned content.",
+              },
+            },
+            additionalProperties: false,
+          },
+          payment_signature: {
+            type: "string",
+            description: "x402 payment header (base64-encoded envelope).",
+          },
+        },
+        required: ["from", "target", "authorization"],
+        additionalProperties: false,
+      },
+      method: "POST",
+      path: "/relay",
+      authMode: "inline_x402",
+      bodyFromArgs: true,
+      stripArgs: ["payment_signature"],
+      priceUsd: 0.05,
+    },
+    {
+      name: "h_relay_get_relay",
+      description:
+        "Free. Get a public relay provenance record by id: the request/response hashes, the " +
+        "target listing id, applied sanitization, and the on-chain anchor reference. Never the " +
+        "fetched content or the caller identity.",
+      inputSchema: {
+        type: "object",
+        properties: { id: { type: "string", description: "Relay record id." } },
+        required: ["id"],
+        additionalProperties: false,
+      },
+      method: "GET",
+      path: "/relay/{id}",
+      authMode: "free",
+    },
   ],
 };
