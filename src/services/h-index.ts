@@ -57,6 +57,17 @@ export const hIndex: ServiceDef = {
       authMode: "free",
     },
     {
+      name: "h_index_categories",
+      description:
+        "Free. List the registry categories (id + label) available for filtering discovery, " +
+        "e.g. developer-tools, data, ai-models. Use a category id as the `category` filter on " +
+        "h_index_search.",
+      inputSchema: { type: "object", properties: {}, additionalProperties: false },
+      method: "GET",
+      path: "/categories",
+      authMode: "free",
+    },
+    {
       name: "h_index_register",
       description:
         "Paid ($10.00 USD). Register a new service on H-Index. Requires a TIP-712/EIP-712 " +
