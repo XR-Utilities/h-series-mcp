@@ -140,6 +140,38 @@ export const hRelay: ServiceDef = {
       authMode: "free",
     },
     {
+      name: "h_relay_publish_heartbeat",
+      description:
+        "Free. Publish your own liveness to the Broadcast feed. Requires a TIP-712 heartbeat " +
+        "authorization signed by the publisher over its identity. Rate-limited per publisher. " +
+        "Use h_relay_heartbeat to read the feed.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          identity: {
+            type: "string",
+            description: "Publisher identity (CAIP-10). Must match the authorization signer.",
+          },
+          authorization: {
+            type: "object",
+            description: "TIP-712 heartbeat authorization signed by the publisher.",
+            properties: {
+              scheme: { type: "string" },
+              signature: { type: "string" },
+              issuedAt: { type: "number" },
+            },
+            required: ["scheme", "signature", "issuedAt"],
+          },
+        },
+        required: ["identity", "authorization"],
+        additionalProperties: false,
+      },
+      method: "POST",
+      path: "/heartbeat",
+      authMode: "free",
+      bodyFromArgs: true,
+    },
+    {
       name: "h_relay_relay",
       description:
         "Paid ($0.05 USD). Context proxy / verifiable agent egress: fetch context from a " +
