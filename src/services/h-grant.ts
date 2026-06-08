@@ -21,7 +21,7 @@ export const hGrant: ServiceDef = {
   id: "h-grant",
   label: "H-Grant",
   baseUrl: "https://h-grant.xr-utilities.ai",
-  manifestUrl: "https://h-grant.xr-utilities.ai/.well-known/agent-card.json",
+  manifestUrl: "https://h-grant.xr-utilities.ai/config",
   knownSchemaVersions: ["0.1.0"],
   tools: [
     {

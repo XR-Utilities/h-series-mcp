@@ -306,23 +306,48 @@ export const hSeal: ServiceDef = {
     {
       name: "h_seal_verify",
       description:
-        "Free. Verify a receipt exists on-chain by fetching it from the H-Seal API. " +
-        "Equivalent to h_seal_get_receipt but named for discoverability when an agent " +
-        "wants to confirm a receipt is genuine.",
+        "Free. Stateless cryptographic re-verification of a receipt the caller holds: present the " +
+        "same signed fields plus the signature and H-Seal confirms the signature verifies against " +
+        "the identity's on-chain key. No payment, no state change. Use h_seal_get_receipt to fetch " +
+        "a stored receipt by id; use this to prove a receipt you hold is genuine. Optional provider " +
+        "co-signature verified when present.",
       inputSchema: {
         type: "object",
         properties: {
-          id: {
-            type: "string",
-            description: "Receipt ID to verify (topic/sequence format).",
-          },
+          taskId: { type: "string", description: "Task identifier from the receipt." },
+          serviceEndpoint: { type: "string", description: "Service endpoint from the receipt (may be empty)." },
+          requestHash: { type: "string", description: "SHA-256 hex of the request payload." },
+          responseHash: { type: "string", description: "SHA-256 hex of the response payload." },
+          resultStatus: { type: "string", enum: ["success", "error", "timeout", "partial"] },
+          startedAt: { type: "number", description: "Unix timestamp the request was sent." },
+          completedAt: { type: "number", description: "Unix timestamp the response was received." },
+          latencyMs: { type: "number", description: "Round-trip time in milliseconds." },
+          callerIdentity: { type: "string", description: "CAIP-10 identity that signed the receipt." },
+          providerIdentity: { type: "string", description: "CAIP-10 provider identity (optional)." },
+          receiptTopicId: { type: "string", description: "HCS receipt topic id (topic/sequence format)." },
+          issuedAt: { type: "number", description: "Unix timestamp of the signature." },
+          signature: { type: "string", description: "Hex signature over the receipt payload." },
+          schemaVersion: { type: "number", description: "Receipt schema version (omit/1 for v0.1, 2 for v0.2, 4 for v0.4)." },
+          method: { type: "string", description: "(v0.2) Operation name." },
+          httpStatus: { type: "number", description: "(v0.2) HTTP status of the underlying call." },
+          correlationId: { type: "string", description: "(v0.2) Cross-receipt correlation id." },
+          amountPaid: { type: "string", description: "(v0.2) Amount paid to the provider." },
+          amountCurrency: { type: "string", description: "(v0.2) Currency for amountPaid." },
+          requestId: { type: "string", description: "(v0.4) Request envelope id this receipt fulfills." },
+          providerSignature: { type: "string", description: "(v0.3) Provider co-signature (with providerIssuedAt)." },
+          providerIssuedAt: { type: "number", description: "(v0.3) Unix timestamp the provider signed." },
         },
-        required: ["id"],
+        required: [
+          "taskId", "serviceEndpoint", "requestHash", "responseHash",
+          "resultStatus", "startedAt", "completedAt", "latencyMs",
+          "callerIdentity", "receiptTopicId", "issuedAt", "signature",
+        ],
         additionalProperties: false,
       },
-      method: "GET",
-      path: "/receipts/{id}",
+      method: "POST",
+      path: "/verify",
       authMode: "free",
+      bodyFromArgs: true,
     },
     {
       name: "h_seal_config",

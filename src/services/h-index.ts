@@ -4,7 +4,7 @@ export const hIndex: ServiceDef = {
   id: "h-index",
   label: "H-Index",
   baseUrl: "https://h-index.xr-utilities.ai",
-  manifestUrl: "https://h-index.xr-utilities.ai/.well-known/agent-card.json",
+  manifestUrl: "https://h-index.xr-utilities.ai/config",
   knownSchemaVersions: ["0.1.0"],
   tools: [
     {

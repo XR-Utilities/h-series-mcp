@@ -249,5 +249,31 @@ export const hRelay: ServiceDef = {
       path: "/relay/{id}",
       authMode: "free",
     },
+    {
+      name: "h_relay_list_deliveries",
+      description:
+        "Free. List recent deliveries already anchored on the public HCS topic, newest first. " +
+        "Public projection only (id, status, anchor refs); never bodies, identities, or routing.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          limit: { type: "number", description: "Max records to return (1-100, default 25)." },
+        },
+        additionalProperties: false,
+      },
+      method: "GET",
+      path: "/deliveries",
+      authMode: "free",
+    },
+    {
+      name: "h_relay_config",
+      description:
+        "Free. Public service manifest: endpoints, prices, payment rails, and the TIP-712 signing " +
+        "contract for authorizing H-Relay requests.",
+      inputSchema: { type: "object", properties: {}, additionalProperties: false },
+      method: "GET",
+      path: "/config",
+      authMode: "free",
+    },
   ],
 };
