@@ -324,7 +324,7 @@ export const hSeal: ServiceDef = {
           latencyMs: { type: "number", description: "Round-trip time in milliseconds." },
           callerIdentity: { type: "string", description: "CAIP-10 identity that signed the receipt." },
           providerIdentity: { type: "string", description: "CAIP-10 provider identity (optional)." },
-          receiptTopicId: { type: "string", description: "HCS receipt topic id (topic/sequence format)." },
+          receiptTopicId: { type: "string", description: "HCS receipt topic id, e.g. 0.0.x (the topic only, not topic/sequence)." },
           issuedAt: { type: "number", description: "Unix timestamp of the signature." },
           signature: { type: "string", description: "Hex signature over the receipt payload." },
           schemaVersion: { type: "number", description: "Receipt schema version (omit/1 for v0.1, 2 for v0.2, 4 for v0.4)." },
