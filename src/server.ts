@@ -5,8 +5,9 @@ import {
   ListToolsRequestSchema,
   ReadResourceRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
-import { ALL_TOOLS, SERVICES } from "./services/index.js";
+import { ALL_TOOLS, SERVICES, findToolOwner } from "./services/index.js";
 import { dispatchTool, type DispatchOptions } from "./dispatch.js";
+import { validateArgs } from "./argcheck.js";
 import { SERVER_VERSION } from "./version.js";
 
 const SERVER_NAME = "h-series";
@@ -34,6 +35,30 @@ export function buildServer(opts: DispatchOptions = {}): Server {
 
   server.setRequestHandler(CallToolRequestSchema, async (req) => {
     const args = (req.params.arguments ?? {}) as Record<string, unknown>;
+
+    // Validate args against the tool's declared inputSchema before anything
+    // is forwarded to a backend. The Server request-handler path only checks
+    // the JSON-RPC envelope, so without this an unknown or malformed field
+    // would flow straight upstream. Backends remain the authoritative
+    // validators; this is a defense-in-depth gate, returned as an MCP error.
+    const owner = findToolOwner(req.params.name);
+    if (owner) {
+      const violations = validateArgs(args, owner.tool.inputSchema);
+      if (violations.length > 0) {
+        return {
+          isError: true,
+          content: [
+            {
+              type: "text" as const,
+              text:
+                `h-series-mcp argument validation error for ${req.params.name}: ` +
+                violations.map((v) => (v.path ? `${v.path}: ${v.message}` : v.message)).join("; "),
+            },
+          ],
+        };
+      }
+    }
+
     try {
       const result = await dispatchTool(req.params.name, args, opts);
       return {

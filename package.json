@@ -13,6 +13,7 @@
   ],
   "scripts": {
     "build": "tsc",
+    "test": "tsc && node --test dist/",
     "start": "node dist/index.js",
     "start:stdio": "node dist/index.js --transport stdio",
     "start:http": "node dist/index.js --transport http",
