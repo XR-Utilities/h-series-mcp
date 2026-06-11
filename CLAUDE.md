@@ -41,3 +41,18 @@ and diagnosis in the actual code, data, logs, config, and observed behavior:
 read the source, run it, check the output, and verify against reality before
 acting or concluding. If something can't be verified, say so plainly instead of
 guessing. A plausible answer that hasn't been checked is a liability.
+
+## Working principle: completeness checks
+Before any statement of scope - "all", "none", "every", "there are N", "X exists",
+"X does not exist" - enumerate the authoritative source that defines the set and verify
+each member. Never answer scope from memory, recent context, or the local workspace.
+- accepted rails / payment methods -> live `GET /config` `accepts`
+- chains, treasuries, priced surfaces -> the canonical treasury source of truth
+  (`audit/treasury.json` in H-Relay)
+- repos -> the XR-Utilities org list via `XR_UTILITIES_PAT`, not the local `/workspaces`
+  clones (clones are a partial, possibly stale subset)
+- what is configured / which secrets are set -> the actual `env` (a var can be set or
+  unset; check, never assume)
+- struct fields / variants -> the code or Zod schema
+If a member cannot be verified, say so explicitly rather than omitting it. This
+operationalizes the "no guessing" principle.
