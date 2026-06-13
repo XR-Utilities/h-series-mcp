@@ -13,10 +13,14 @@ if [ -z "$base" ]; then
   fi
 fi
 
+# Exclude the gate machinery itself: these files legitimately contain the
+# detection patterns (the regex, the prose about attribution) and must not be
+# flagged by their own rule.
+EX=( ":(exclude)scripts/check-conventions.sh" ":(exclude)scripts/sync-conventions.sh" ":(exclude)H-SERIES-CONVENTIONS.md" )
 if [ -n "$base" ]; then
-  added="$(git diff "$base"...HEAD 2>/dev/null | grep '^+' | grep -v '^+++' || true)"
+  added="$(git diff "$base"...HEAD -- . "${EX[@]}" 2>/dev/null | grep '^+' | grep -v '^+++' || true)"
 else
-  added="$(git diff --cached 2>/dev/null | grep '^+' | grep -v '^+++' || true)"
+  added="$(git diff --cached -- . "${EX[@]}" 2>/dev/null | grep '^+' | grep -v '^+++' || true)"
 fi
 
 fail=0
