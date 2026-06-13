@@ -1,0 +1,18 @@
+# H-Series conventions gate. Enforces the shared no-em-dash and no-AI-attribution
+# rules on every push and PR, scoped to the diff so it never fails on legacy.
+name: conventions-gate
+on:
+  push:
+    branches: [main]
+  pull_request:
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Run conventions gate
+        env:
+          GITHUB_EVENT_BEFORE: ${{ github.event.before }}
+        run: bash scripts/check-conventions.sh

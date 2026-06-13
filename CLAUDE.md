@@ -1,5 +1,69 @@
 # h-series-mcp
 
+<!-- H-SERIES-SHARED:START (synced from H-Grant/H-SERIES-CONVENTIONS.md - do not edit here) -->
+
+## H-Series shared conventions
+
+Canonical copy lives in H-Grant (`H-SERIES-CONVENTIONS.md`). Edit it there and run
+`scripts/sync-conventions.sh` to propagate the block into every repo's `CLAUDE.md`.
+These apply to every repo in the H-Series. Repo-specific instructions live OUTSIDE
+the synced block.
+
+### Authorship
+- Commit author identity: `XRPL-Utilities <xrpl-utilities@proton.me>` (the
+  XR-Utilities org account). Never a personal email.
+- The H-Series contact email is `xr-utilities@proton.me` (docs, manifests, public
+  contact fields), distinct from the commit author email.
+- Commits, PRs, and code contain NO AI or assistant attribution of any kind: no
+  "authored by", "co-authored by", or "generated with" referencing Claude, AI, or
+  an assistant, and no such markers in code comments. Authorship is the human
+  contributor and the org only.
+
+### Style
+- Direct, professional, technical language. No marketing voice in code or docs.
+- No em dashes. Use commas, parentheses, or semicolons.
+- Avoid filler adjectives (robust, seamless, cutting-edge, pivotal, delve, unleash,
+  landscape). Prefer solid, functional, reliable.
+- Comments explain why, not what.
+
+### Working principle: no guessing
+Work and troubleshoot from facts, never assumptions. Ground every change, fix, and
+diagnosis in the actual code, data, logs, config, and observed behavior: read the
+source, run it, check the output, verify against reality before acting or
+concluding. If something cannot be verified, say so plainly instead of guessing.
+
+### Working principle: completeness checks
+Before any statement of scope ("all", "none", "every", "there are N", "X exists" /
+"X does not exist"), enumerate the authoritative source that defines the set and
+verify each member. Never answer scope from memory or the local workspace. For
+repos, enumerate the XR-Utilities org via the PAT, not the local `/workspaces`
+clones (clones are a partial, possibly stale subset). If a member cannot be
+verified, say so explicitly rather than omitting it.
+
+### Security change discipline (where this repo carries SECURITY-LOG.md)
+After any change that creates, updates, deletes, or disables/pauses code, do a
+focused security review of the diff. If it touches a security-relevant path or
+shifts the security posture (trust boundary, secret handling, authorization,
+signing, dependencies, logging, or a disabled/relaxed control), append a `pending`
+entry to `SECURITY-LOG.md`. The master H-Series security architecture doc (private,
+H-Grant `SECURITY-ARCHITECTURE.md`) is the collector. No secrets, keys, or raw
+target identifiers in the log.
+
+### Financial change discipline (where this repo carries FINANCIAL-LOG.md)
+After any change that affects what a service charges or accepts (a price; a payment
+rail, chain, or token; a treasury wallet; a payment surface; a facilitator;
+settlement verification; or oracle quoting), append a `pending` entry to
+`FINANCIAL-LOG.md`. The canonical treasury source of truth and the audit routine
+live in H-Relay (`audit/treasury.json`, `npm run audit:financial`). The master doc
+(private, H-Grant `FINANCIAL-ARCHITECTURE.md`) is the collector. No secrets or keys
+in the log; public on-chain wallet addresses and token ids are fine.
+
+### Secrets
+Secrets read from environment only. Never committed. In Codespaces use repo-level
+Codespace secrets; in production use KMS or platform env injection.
+
+<!-- H-SERIES-SHARED:END -->
+
 Public passthrough MCP server exposing the H-Series APIs (H-Index registry,
 H-Seal receipts) as agent tools. Stateless: no database, no wallet, no secrets;
 all security is delegated upstream to the backends.
