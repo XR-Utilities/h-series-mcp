@@ -33,5 +33,9 @@ if printf '%s' "$added" | grep -qiE 'co-authored-by:[[:space:]]*(claude|anthropi
   echo "::error::conventions gate: AI/assistant attribution was introduced. Authorship is the human contributor and the org only."
   fail=1
 fi
+if printf '%s' "$added" | grep -qiE "as an ai( language model| assistant)?\b|as a language model\b|i'm (just )?an ai\b|i am (just )?an ai\b"; then
+  echo "::error::conventions gate: AI-speak / assistant disclaimer was introduced. Write in a direct, human, professional voice."
+  fail=1
+fi
 [ "$fail" = "0" ] && echo "conventions gate: clean"
 exit "$fail"
