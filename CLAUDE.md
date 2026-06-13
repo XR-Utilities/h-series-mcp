@@ -24,8 +24,8 @@ Applies to ALL output: code, comments, docs, white papers, one-pagers, and websi
 copy.
 - Direct, professional, technical language. No marketing voice.
 - No AI-speak. No AI or chatbot language patterns: no flowery or hedging prose, no
-  disclaimers ("as an AI", "as a language model"), no chatty preambles ("Sure, I
-  can help"), no preachy wrap-up summaries. Lead with the asset or the answer.
+  model self-references or assistant disclaimers, no chatty preambles, no preachy
+  wrap-up summaries. Lead with the asset or the answer.
 - No em dashes. Use commas, parentheses, or semicolons.
 - Avoid filler adjectives (robust, seamless, cutting-edge, pivotal, delve, unleash,
   landscape). Prefer solid, functional, reliable.
