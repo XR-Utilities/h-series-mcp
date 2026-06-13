@@ -58,6 +58,18 @@ live in H-Relay (`audit/treasury.json`, `npm run audit:financial`). The master d
 (private, H-Grant `FINANCIAL-ARCHITECTURE.md`) is the collector. No secrets or keys
 in the log; public on-chain wallet addresses and token ids are fine.
 
+### Documentation and routines
+After any change, update every affected documentation asset: technical (READMEs,
+endpoint/API references, `.env.example`), architecture, security (SECURITY-LOG +
+the H-Grant master), financial (FINANCIAL-LOG + the H-Grant master, where money is
+handled), the white paper, the one-pager / sales sheet, continuity (the session
+handoff / next-session notes), and integration (client/SDK and how-to-integrate
+docs). Run the routines: a startup check at session start; smoke tests for the live
+paths (anything that moves money or touches a chain, end to end); a Quality +
+Functionality + Security audit of the diff, looping until clean; and the closeout
+gate (typecheck, full tests, the conventions gate, docs updated, handoff refreshed)
+before handoff.
+
 ### Secrets
 Secrets read from environment only. Never committed. In Codespaces use repo-level
 Codespace secrets; in production use KMS or platform env injection.
