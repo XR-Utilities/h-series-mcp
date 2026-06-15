@@ -20,10 +20,15 @@ export function buildServer(opts: DispatchOptions = {}): Server {
 
   server.setRequestHandler(ListToolsRequestSchema, async () => ({
     tools: ALL_TOOLS.map((t) => {
-      const pricing =
+      // Discriminated union so both branches are shape-checked: free tools
+      // carry no settlement field, paid tools always do.
+      type Pricing =
+        | { paid: false; priceUsd: 0 }
+        | { paid: true; priceUsd: number; settlement: "x402_inline" };
+      const pricing: Pricing =
         t.authMode === "free"
-          ? { paid: false as const, priceUsd: 0 }
-          : { paid: true as const, priceUsd: t.priceUsd ?? 0, settlement: "x402_inline" };
+          ? { paid: false, priceUsd: 0 }
+          : { paid: true, priceUsd: t.priceUsd ?? 0, settlement: "x402_inline" };
       return {
         name: t.name,
         description: t.description,

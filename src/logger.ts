@@ -44,7 +44,14 @@ const MAX_DEPTH = 6;
  * raw bodies in the first place; see dispatch.ts).
  */
 export function redact(value: unknown, depth = 0): unknown {
-  if (depth >= MAX_DEPTH) return value;
+  if (depth >= MAX_DEPTH) {
+    // At the depth cap, never emit an unscrubbed subtree: a sensitive-keyed
+    // field nested past MAX_DEPTH would otherwise pass through verbatim,
+    // defeating the redactor. Scalars are safe (we scrub by key, not content);
+    // objects and arrays are truncated to a placeholder.
+    if (Array.isArray(value) || (value && typeof value === "object")) return "[truncated]";
+    return value;
+  }
   if (Array.isArray(value)) return value.map((v) => redact(v, depth + 1));
   if (value && typeof value === "object") {
     const out: Record<string, unknown> = {};

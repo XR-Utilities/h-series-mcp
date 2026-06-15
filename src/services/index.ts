@@ -8,9 +8,7 @@ import { hPact } from "./h-pact.js";
 
 export const SERVICES: ServiceDef[] = [hIndex, hSeal, hGrant, hRelay, hScope, hPact];
 
-export const ALL_TOOLS = SERVICES.flatMap((s) =>
-  s.tools.map((t) => ({ ...t, _serviceId: s.id, _baseUrl: s.baseUrl })),
-);
+export const ALL_TOOLS = SERVICES.flatMap((s) => s.tools);
 
 export function findToolOwner(toolName: string):
   | { service: ServiceDef; tool: ServiceDef["tools"][number] }

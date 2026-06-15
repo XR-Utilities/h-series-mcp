@@ -89,8 +89,11 @@ async function validateService(svc: ServiceDef, timeoutMs: number): Promise<Vali
     // Normalize both sides: strip path params, collapse repeated slashes,
     // drop trailing slashes. Lets a tool path with {param} match a manifest
     // entry that keeps the param placeholder.
+    // Strip the query string first so a tool path that bakes a query param
+    // into its template (e.g. "/endpoints?id={id}") still matches a manifest
+    // entry that advertises the bare route ("/endpoints").
     const norm = (s: string) =>
-      s.replace(/\{[^}]+\}/g, "").replace(/\/{2,}/g, "/").replace(/\/+$/, "");
+      s.split("?")[0].replace(/\{[^}]+\}/g, "").replace(/\/{2,}/g, "/").replace(/\/+$/, "");
     const flat = Object.values(endpoints as Record<string, unknown>)
       .map((v) => norm(String(v)))
       .join(" ");
