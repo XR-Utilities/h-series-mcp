@@ -1,7 +1,7 @@
 {
   "name": "@xr-utilities/h-series-mcp",
   "version": "0.1.0",
-  "description": "Model Context Protocol server for the H-Series product family: H-Index (capability registry) and H-Seal (receipt anchoring). Stateless passthrough. Caller provides x402 payment header.",
+  "description": "Model Context Protocol server for the H-Series product family: H-Index (capability registry), H-Seal (receipt anchoring), H-Grant (credential release), H-Relay (agent transport), H-Scope (wallet scanning), H-Pact (membership rings), and H-Gate (data-egress control). Stateless passthrough. Caller provides x402 payment header.",
   "license": "MIT",
   "type": "module",
   "bin": {

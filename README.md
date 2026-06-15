@@ -8,6 +8,9 @@ forwards calls to the live HTTPS services:
 - H-Seal: receipt anchoring and verification
 - H-Grant: credential vaults and authorized capability release
 - H-Relay: agent message delivery, inbox, heartbeat
+- H-Scope: wallet behavior scanning and entity-posture reads
+- H-Pact: membership-ring registry (create, admit, config)
+- H-Gate: agentic data-egress control (inspect text, config)
 
 ## What it is
 

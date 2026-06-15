@@ -71,7 +71,7 @@ export async function runHttp(port: number): Promise<void> {
     res.json({
       service: "h-series-mcp",
       description:
-        "MCP server for the H-Series product family (H-Index, H-Seal, H-Grant, H-Relay, H-Scope, H-Pact). Connect any MCP client to /mcp.",
+        "MCP server for the H-Series product family (H-Index, H-Seal, H-Grant, H-Relay, H-Scope, H-Pact, H-Gate). Connect any MCP client to /mcp.",
       version: SERVER_VERSION,
       mcp_endpoint: "/mcp",
       manifest: "/agents.json",
@@ -98,7 +98,7 @@ export async function runHttp(port: number): Promise<void> {
     provider: "XR Utilities",
     description:
       "Model Context Protocol server exposing the H-Series product family " +
-      "(H-Index, H-Seal, H-Grant, H-Relay, H-Scope, H-Pact) as " + ALL_TOOLS.length + " callable tools " +
+      "(H-Index, H-Seal, H-Grant, H-Relay, H-Scope, H-Pact, H-Gate) as " + ALL_TOOLS.length + " callable tools " +
       "for AI agents. Stateless passthrough proxy: callers supply their own " +
       "x402 payment envelope per tool call. Settled inline via the x402 " +
       "facilitator on Hedera; per-call fee lands on the " +
@@ -141,7 +141,7 @@ export async function runHttp(port: number): Promise<void> {
       "# H-Series MCP",
       "",
       "Model Context Protocol server exposing the H-Series product family",
-      `(H-Index, H-Seal, H-Grant, H-Relay, H-Scope, H-Pact) as ${ALL_TOOLS.length} callable tools for AI agents.`,
+      `(H-Index, H-Seal, H-Grant, H-Relay, H-Scope, H-Pact, H-Gate) as ${ALL_TOOLS.length} callable tools for AI agents.`,
       "Stateless passthrough proxy.",
       "Provider: XR Utilities.",
       "",
