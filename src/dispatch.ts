@@ -86,6 +86,7 @@ export async function dispatchTool(
   const callerPaymentSig = stringArg(args.payment_signature);
 
   if (tool.authMode === "inline_x402" && callerPaymentSig) {
+    assertValidPaymentSignature(callerPaymentSig);
     headers["x-payment"] = callerPaymentSig;
   }
 
@@ -141,29 +142,39 @@ export async function dispatchTool(
     parsed = text;
   }
 
-  // 4xx (including 402): soft-return so the LLM can reason over the
-  // structured challenge and retry with a payment_signature.
-  // 5xx: do not relay the upstream body to the caller. A 5xx body can carry
-  // an internal stack trace, an unmasked identifier, or echoed request data;
-  // forwarding it verbatim is the log-hygiene gap this closes. Log the
-  // redacted body server-side for our own debugging and throw a generic
-  // status so server.ts surfaces isError:true without the raw body.
+  // Non-2xx handling. Three tiers, narrowing what is relayed to the caller:
+  //
+  //   402  - the x402 payment challenge. Relay the full redacted body so the
+  //          LLM can reason over the structured challenge and retry with a
+  //          payment_signature. This is the load-bearing transparent-proxy
+  //          case and the only shape we forward whole.
+  //   4xx  - other client errors (400/401/403/404/409/422...). Relay ONLY a
+  //          bounded allowlist of conventional error fields after redaction;
+  //          drop the rest. redact() scrubs by key name only and cannot find a
+  //          secret echoed inside a generically-named field, so forwarding a
+  //          backend-controlled 4xx body verbatim is the residual leak this
+  //          closes. Unknown-shaped 4xx bodies collapse to just the status.
+  //   5xx  - never relay the body. It can carry a stack trace, an unmasked
+  //          identifier, or echoed request data. Log redacted server-side and
+  //          throw a generic status so server.ts surfaces isError:true.
   if (!res.ok) {
     if (res.status >= 500) {
       log.warn("upstream 5xx", { tool: toolName, service: service.id, status: res.status, body: redact(parsed) });
       throw new Error(`upstream ${res.status}`);
     }
+    if (res.status === 402) {
+      return {
+        _error: true,
+        status: 402,
+        response: redact(parsed),
+        hint: "This endpoint requires x402 payment. Provide a base64-encoded x402 envelope as payment_signature.",
+      };
+    }
+    log.warn("upstream 4xx", { tool: toolName, service: service.id, status: res.status, body: redact(parsed) });
     return {
       _error: true,
       status: res.status,
-      // redact() scrubs any sensitive-keyed field an upstream 4xx might echo
-      // (a payment envelope, a token) while leaving the structured challenge
-      // an x402 402 carries intact.
-      response: redact(parsed),
-      hint:
-        res.status === 402
-          ? "This endpoint requires x402 payment. Provide a base64-encoded x402 envelope as payment_signature."
-          : undefined,
+      response: relayable4xx(parsed),
     };
   }
   return parsed;
@@ -171,4 +182,67 @@ export async function dispatchTool(
 
 function stringArg(v: unknown): string | undefined {
   return typeof v === "string" && v.length > 0 ? v : undefined;
+}
+
+// Conventional error fields a backend 4xx carries that a caller actually needs
+// to reason over (and retry). Anything outside this set on a non-402 4xx is
+// dropped rather than relayed: redact() scrubs by key name only, so a secret
+// echoed under a generic field (data, result, ...) would otherwise pass to the
+// caller. Values are still run through redact() in case a backend nests a
+// sensitive-keyed field under one of these.
+const RELAYABLE_4XX_FIELDS = new Set(["error", "code", "message", "detail", "details"]);
+
+/**
+ * Reduce a non-402 4xx body to the allowlisted error fields. A non-object body
+ * (a bare string or array) is not forwarded; the caller still gets the status.
+ * Returns undefined when nothing allowlisted is present so the response is just
+ * the status code.
+ */
+function relayable4xx(parsed: unknown): unknown {
+  if (parsed === null || typeof parsed !== "object" || Array.isArray(parsed)) {
+    return undefined;
+  }
+  const out: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(parsed as Record<string, unknown>)) {
+    if (RELAYABLE_4XX_FIELDS.has(k.toLowerCase())) {
+      out[k] = redact(v);
+    }
+  }
+  return Object.keys(out).length > 0 ? out : undefined;
+}
+
+// An x402 envelope is a base64 (standard or url-safe) JSON blob. A real
+// envelope (scheme + network + a signed authorization) is on the order of a
+// few hundred bytes to low kilobytes; 64 KB is generous headroom while still
+// bounding what we copy into a request header. We validate before forwarding
+// rather than relying on the HTTP client to throw on a malformed value: this
+// keeps a multi-megabyte string or control-character payload off the wire and
+// gives the caller a clear error instead of an opaque dispatch failure.
+const PAYMENT_SIG_MAX_LEN = 64 * 1024;
+const BASE64_ENVELOPE = /^[A-Za-z0-9+/_-]+={0,2}$/;
+
+export class InvalidPaymentSignatureError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "InvalidPaymentSignatureError";
+  }
+}
+
+/**
+ * Reject a payment_signature that is not a plausible base64 x402 envelope
+ * before it is set as the x-payment header. Bounds length and constrains the
+ * charset (no control characters, no CR/LF that could split headers). The
+ * backend remains the authority on whether the envelope actually settles.
+ */
+export function assertValidPaymentSignature(value: string): void {
+  if (value.length > PAYMENT_SIG_MAX_LEN) {
+    throw new InvalidPaymentSignatureError(
+      `payment_signature exceeds the ${PAYMENT_SIG_MAX_LEN}-byte limit`,
+    );
+  }
+  if (!BASE64_ENVELOPE.test(value)) {
+    throw new InvalidPaymentSignatureError(
+      "payment_signature must be a base64-encoded x402 envelope",
+    );
+  }
 }

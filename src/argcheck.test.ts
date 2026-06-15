@@ -84,3 +84,56 @@ test("multiple violations are all reported", () => {
   // one missing required (apiName) + one unknown key (extra)
   assert.equal(errors.length, 2);
 });
+
+// enum enforcement at the MCP boundary (h_scope_scan.mode is a real enum).
+const scanTool = findToolOwner("h_scope_scan");
+assert.ok(scanTool, "h_scope_scan tool should be registered");
+const scanSchema: JSONSchema7 = scanTool.tool.inputSchema;
+
+test("a declared enum value is accepted", () => {
+  const errors = validateArgs({ subject: "0xabc", mode: "full" }, scanSchema);
+  assert.deepEqual(errors, []);
+});
+
+test("a value outside a declared enum is rejected", () => {
+  const errors = validateArgs({ subject: "0xabc", mode: "deep" }, scanSchema);
+  assert.equal(errors.length, 1);
+  assert.equal(errors[0]?.path, "mode");
+  assert.match(errors[0]?.message ?? "", /must be one of/);
+});
+
+// Nested required enforcement (h_relay_send.authorization has its own required).
+const sendTool = findToolOwner("h_relay_send");
+assert.ok(sendTool, "h_relay_send tool should be registered");
+const sendSchema: JSONSchema7 = sendTool.tool.inputSchema;
+
+const validSendArgs = {
+  to: "hedera:mainnet:0.0.2",
+  from: "hedera:mainnet:0.0.1",
+  body: "hello",
+  authorization: { scheme: "tip712", signature: "0xsig", issuedAt: 1781000000 },
+};
+
+test("a complete nested authorization passes", () => {
+  assert.deepEqual(validateArgs(validSendArgs, sendSchema), []);
+});
+
+test("a missing nested required field is rejected with a dotted path", () => {
+  const { signature: _drop, ...authRest } = validSendArgs.authorization;
+  const bad = { ...validSendArgs, authorization: authRest };
+  const errors = validateArgs(bad, sendSchema);
+  assert.equal(errors.length, 1);
+  assert.equal(errors[0]?.path, "authorization.signature");
+  assert.match(errors[0]?.message ?? "", /required/);
+});
+
+test("a nested field of the wrong type is rejected", () => {
+  const bad = {
+    ...validSendArgs,
+    authorization: { ...validSendArgs.authorization, issuedAt: "nope" },
+  };
+  const errors = validateArgs(bad, sendSchema);
+  assert.equal(errors.length, 1);
+  assert.equal(errors[0]?.path, "authorization.issuedAt");
+  assert.match(errors[0]?.message ?? "", /expected number/);
+});

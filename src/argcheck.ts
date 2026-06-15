@@ -22,9 +22,17 @@
  *     enough to keep unexpected shapes out without duplicating backend logic.
  *   - additionalProperties:false: unknown keys (not in `properties`) are
  *     rejected so unvalidated fields cannot reach a backend.
+ *   - enum: a present value whose property schema declares an `enum` must be
+ *     one of the listed members. Closed value sets (e.g. h_scope_scan.mode)
+ *     are the cheapest way an attacker probes a backend, so we gate them here.
+ *   - nested required: when a present property is itself an object schema with
+ *     its own `required` (and/or `properties`), it is recursed one level so a
+ *     required sub-field (e.g. h_relay_send.authorization.signature) is enforced
+ *     at the MCP boundary, not only at the backend.
  *
- * It does not enforce enum, pattern, minimum/maximum, minItems/maxItems, or
- * any nested constraints: those stay with the backend, which is the validator.
+ * It does not enforce pattern, minimum/maximum, minItems/maxItems, or array
+ * item shapes, and recursion stops after one nested object level: those stay
+ * with the backend, which is the authoritative validator.
  */
 
 import type { JSONSchema7 } from "./jsonschema.js";
@@ -70,6 +78,15 @@ function matchesType(v: unknown, expected: NonNullable<JSONSchema7["type"]>): bo
   }
 }
 
+// Cap how deep recursion descends so a hostile nested schema/payload cannot
+// drive unbounded work. Tool schemas only need one level past the top object
+// (the top call is depth 0, a nested object's contents are depth 1).
+const MAX_RECURSE_DEPTH = 1;
+
+function joinPath(prefix: string, key: string): string {
+  return prefix ? `${prefix}.${key}` : key;
+}
+
 /**
  * Validate `args` against `schema`. Returns the list of violations; an empty
  * list means valid. Collects all violations rather than failing on the first
@@ -77,20 +94,39 @@ function matchesType(v: unknown, expected: NonNullable<JSONSchema7["type"]>): bo
  */
 export function validateArgs(args: unknown, schema: JSONSchema7): ArgValidationError[] {
   const errors: ArgValidationError[] = [];
+  validateInto(args, schema, "", 0, errors);
+  return errors;
+}
 
-  // Top-level type. Tool schemas are objects; if a schema says so, enforce it.
+function validateInto(
+  args: unknown,
+  schema: JSONSchema7,
+  prefix: string,
+  depth: number,
+  errors: ArgValidationError[],
+): void {
+  // Type check for this node. Tool schemas are objects; if a schema says so,
+  // enforce it. A type mismatch here makes property checks meaningless.
   if (schema.type && !matchesType(args, schema.type)) {
     errors.push({
-      path: "",
-      message: `expected ${schema.type}, got ${typeOf(args) ?? typeof args}`,
+      path: prefix,
+      message: `${prefix ? `property '${prefix}' ` : ""}expected ${schema.type}, got ${typeOf(args) ?? typeof args}`,
     });
-    // No point checking properties of a non-object.
-    return errors;
+    return;
+  }
+
+  // enum: a present value must be a listed member. Compared with deep equality
+  // against scalars/arrays/objects so non-string enums work too.
+  if (schema.enum && args !== undefined && !enumIncludes(schema.enum, args)) {
+    errors.push({
+      path: prefix,
+      message: `${prefix ? `property '${prefix}' ` : "value "}must be one of ${JSON.stringify(schema.enum)}`,
+    });
   }
 
   // Below here only object-shaped args carry properties/required to check.
   if (args === null || typeof args !== "object" || Array.isArray(args)) {
-    return errors;
+    return;
   }
   const obj = args as Record<string, unknown>;
   const props = schema.properties ?? {};
@@ -98,7 +134,10 @@ export function validateArgs(args: unknown, schema: JSONSchema7): ArgValidationE
   // required: each must be present and not undefined.
   for (const name of schema.required ?? []) {
     if (!(name in obj) || obj[name] === undefined) {
-      errors.push({ path: name, message: `missing required property '${name}'` });
+      errors.push({
+        path: joinPath(prefix, name),
+        message: `missing required property '${name}'`,
+      });
     }
   }
 
@@ -111,18 +150,65 @@ export function validateArgs(args: unknown, schema: JSONSchema7): ArgValidationE
     const propSchema = props[key];
     if (!propSchema) {
       if (!additionalAllowed) {
-        errors.push({ path: key, message: `unknown property '${key}' not permitted` });
+        errors.push({
+          path: joinPath(prefix, key),
+          message: `unknown property '${key}' not permitted`,
+        });
       }
       continue;
     }
-    // Property type check, one level deep only.
-    if (propSchema.type && value !== undefined && !matchesType(value, propSchema.type)) {
+    if (value === undefined) continue;
+
+    // Property type check.
+    if (propSchema.type && !matchesType(value, propSchema.type)) {
       errors.push({
-        path: key,
+        path: joinPath(prefix, key),
         message: `property '${key}' expected ${propSchema.type}, got ${typeOf(value) ?? typeof value}`,
       });
+      continue;
+    }
+
+    // enum on a present property value.
+    if (propSchema.enum && !enumIncludes(propSchema.enum, value)) {
+      errors.push({
+        path: joinPath(prefix, key),
+        message: `property '${key}' must be one of ${JSON.stringify(propSchema.enum)}`,
+      });
+    }
+
+    // Recurse one level into a nested object schema so its own required/enum
+    // are enforced (e.g. authorization.signature). Past MAX_RECURSE_DEPTH we
+    // defer to the backend.
+    const nestedIsObject =
+      value !== null && typeof value === "object" && !Array.isArray(value);
+    const schemaHasNestedRules =
+      !!propSchema.properties || !!propSchema.required;
+    if (nestedIsObject && schemaHasNestedRules && depth < MAX_RECURSE_DEPTH) {
+      validateInto(value, propSchema, joinPath(prefix, key), depth + 1, errors);
     }
   }
+}
 
-  return errors;
+/** Deep-equality membership test for an enum's declared members. */
+function enumIncludes(members: unknown[], value: unknown): boolean {
+  return members.some((m) => deepEqual(m, value));
+}
+
+function deepEqual(a: unknown, b: unknown): boolean {
+  if (a === b) return true;
+  if (typeof a !== typeof b) return false;
+  if (a === null || b === null) return a === b;
+  if (Array.isArray(a) || Array.isArray(b)) {
+    if (!Array.isArray(a) || !Array.isArray(b) || a.length !== b.length) return false;
+    return a.every((x, i) => deepEqual(x, b[i]));
+  }
+  if (typeof a === "object" && typeof b === "object") {
+    const ka = Object.keys(a as Record<string, unknown>);
+    const kb = Object.keys(b as Record<string, unknown>);
+    if (ka.length !== kb.length) return false;
+    return ka.every((k) =>
+      deepEqual((a as Record<string, unknown>)[k], (b as Record<string, unknown>)[k]),
+    );
+  }
+  return false;
 }

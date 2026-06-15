@@ -63,7 +63,6 @@ export const hGrant: ServiceDef = {
       path: "/call/{vaultId}",
       authMode: "inline_x402",
       bodyFromArgs: true,
-      stripArgs: ["payment_signature"],
       priceUsd: 0.05,
     },
     {

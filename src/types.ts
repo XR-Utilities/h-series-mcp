@@ -56,9 +56,10 @@ export interface ToolDef {
    */
   bodyFromArgs?: boolean;
   /**
-   * Args to drop from the body/query before sending. Used to strip
-   * payment_signature so it doesn't leak into the API call as a
-   * regular field.
+   * Extra args to drop from the body/query before sending. payment_signature
+   * is ALWAYS stripped by the dispatcher (it is a transport header, never a
+   * payload field), so it does not belong here. Use this only for additional
+   * args a future tool needs removed beyond payment_signature.
    */
   stripArgs?: string[];
   /**

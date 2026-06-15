@@ -86,7 +86,6 @@ export const hPact: ServiceDef = {
       path: "/rings",
       authMode: "inline_x402",
       bodyFromArgs: true,
-      stripArgs: ["payment_signature"],
       priceUsd: 10,
     },
     {

@@ -53,7 +53,10 @@ export const hIndex: ServiceDef = {
         additionalProperties: false,
       },
       method: "GET",
-      path: "/endpoints?id={id}",
+      // id is a normal query arg: dispatch builds ?id=... from apiArgs via
+      // URLSearchParams (consistent with every other GET tool). It is not a
+      // path segment, so no {id} placeholder here.
+      path: "/endpoints",
       authMode: "free",
     },
     {
@@ -94,7 +97,6 @@ export const hIndex: ServiceDef = {
       path: "/register",
       authMode: "inline_x402",
       bodyFromArgs: true,
-      stripArgs: ["payment_signature"],
       priceUsd: 10.0,
     },
     {
@@ -120,7 +122,6 @@ export const hIndex: ServiceDef = {
       path: "/renew",
       authMode: "inline_x402",
       bodyFromArgs: true,
-      stripArgs: ["payment_signature"],
       priceUsd: 5.0,
     },
     {

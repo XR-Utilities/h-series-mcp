@@ -52,7 +52,6 @@ export const hRelay: ServiceDef = {
       path: "/send",
       authMode: "inline_x402",
       bodyFromArgs: true,
-      stripArgs: ["payment_signature"],
       priceUsd: 0.05,
     },
     {
@@ -230,7 +229,6 @@ export const hRelay: ServiceDef = {
       path: "/relay",
       authMode: "inline_x402",
       bodyFromArgs: true,
-      stripArgs: ["payment_signature"],
       priceUsd: 0.05,
     },
     {
