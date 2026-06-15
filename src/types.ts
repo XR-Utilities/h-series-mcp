@@ -74,6 +74,14 @@ export interface ToolDef {
    * supplies as a structured arg rather than a transport detail.
    */
   headerArgs?: Record<string, string>;
+  /**
+   * Keep path-substituted args in the request body/query instead of dropping
+   * them after substitution. Needed when a backend route takes a value as BOTH
+   * a path param and a body field, e.g. H-Pact's /rings/{ringId}/admit, whose
+   * handler rejects a request whose body ringId does not equal the path ringId.
+   * Off by default (path args are consumed and stripped from the payload).
+   */
+  keepPathParamsInBody?: boolean;
 }
 
 export interface ServiceDef {

@@ -3,8 +3,10 @@ import { hIndex } from "./h-index.js";
 import { hSeal } from "./h-seal.js";
 import { hGrant } from "./h-grant.js";
 import { hRelay } from "./h-relay.js";
+import { hScope } from "./h-scope.js";
+import { hPact } from "./h-pact.js";
 
-export const SERVICES: ServiceDef[] = [hIndex, hSeal, hGrant, hRelay];
+export const SERVICES: ServiceDef[] = [hIndex, hSeal, hGrant, hRelay, hScope, hPact];
 
 export const ALL_TOOLS = SERVICES.flatMap((s) =>
   s.tools.map((t) => ({ ...t, _serviceId: s.id, _baseUrl: s.baseUrl })),

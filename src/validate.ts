@@ -65,7 +65,8 @@ async function validateService(svc: ServiceDef, timeoutMs: number): Promise<Vali
     return out;
   }
 
-  const liveVersion = String(manifest["schema_version"] ?? "");
+  // Backends publish either schema_version (snake) or schemaVersion (camel); accept both.
+  const liveVersion = String(manifest["schema_version"] ?? manifest["schemaVersion"] ?? "");
   if (liveVersion && !svc.knownSchemaVersions.includes(liveVersion)) {
     const msg =
       `${svc.label} reports schema_version=${liveVersion}; this MCP build ` +

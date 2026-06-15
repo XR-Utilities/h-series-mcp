@@ -71,7 +71,7 @@ export async function dispatchTool(
   ]);
   const apiArgs: Record<string, unknown> = {};
   for (const [k, v] of Object.entries(args)) {
-    if (consumedPathArgs.has(k)) continue;
+    if (consumedPathArgs.has(k) && !tool.keepPathParamsInBody) continue;
     if (stripSet.has(k)) continue;
     apiArgs[k] = v;
   }
