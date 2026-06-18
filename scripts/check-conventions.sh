@@ -16,7 +16,7 @@ fi
 # Exclude the gate machinery itself: these files legitimately contain the
 # detection patterns (the regex, the prose about attribution) and must not be
 # flagged by their own rule.
-EX=( ":(exclude)scripts/check-conventions.sh" ":(exclude)scripts/sync-conventions.sh" ":(exclude)H-SERIES-CONVENTIONS.md" )
+EX=( ":(exclude)scripts/check-conventions.sh" ":(exclude)scripts/sync-conventions.sh" ":(exclude)scripts/closeout.sh" ":(exclude)H-SERIES-CONVENTIONS.md" )
 if [ -n "$base" ]; then
   added="$(git diff "$base"...HEAD -- . "${EX[@]}" 2>/dev/null | grep '^+' | grep -v '^+++' || true)"
 else
