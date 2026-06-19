@@ -15,7 +15,7 @@
  *
  * On dev / first-launch we may want to tolerate manifest fetch failures
  * (so the MCP server still starts when networking is flaky); on
- * production we want to fail-closed. STRICT_VALIDATE=1 toggles that.
+ * production we want to fail-closed. MCP_FAIL_ON_DRIFT=1 toggles that.
  */
 
 import { SERVICES } from "./services/index.js";
