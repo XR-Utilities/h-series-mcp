@@ -69,11 +69,18 @@ endpoint/API references, `.env.example`), architecture, security (SECURITY-LOG +
 the H-Grant master), financial (FINANCIAL-LOG + the H-Grant master, where money is
 handled), the white paper, the one-pager / sales sheet, continuity (the session
 handoff / next-session notes), and integration (client/SDK and how-to-integrate
-docs). Run the routines: a startup check at session start; smoke tests for the live
-paths (anything that moves money or touches a chain, end to end); a Quality +
-Functionality + Security audit of the diff, looping until clean; and the closeout
-gate (typecheck, full tests, the conventions gate, docs updated, handoff refreshed)
-before handoff.
+docs). Make the doc edit in the SAME commit as the code it describes; a doc left to
+update "later" is a doc that drifts (stale version pins, "live" claims for unwired
+code, "vendored" claims for a published dependency). Run the routines: a startup
+check at session start; smoke tests for the live paths (anything that moves money or
+touches a chain, end to end); a Quality + Functionality + Security audit of the diff,
+looping until clean; and the closeout gate (typecheck, full tests, the conventions
+gate, docs updated, handoff refreshed) before handoff.
+
+A change is not "done" at "pushed". Pushed is not deployed: some surfaces auto-deploy
+and some do not, so verify the live service runs the pushed commit before claiming it
+shipped. And a security- or money-relevant change is not done until its behavior is
+verified (a test or a live probe), not merely typechecked.
 
 ### Secrets
 Secrets read from environment only. Never committed. In Codespaces use repo-level
