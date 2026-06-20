@@ -49,16 +49,31 @@ export async function dispatchTool(
   const baseUrl = opts.baseUrlOverride?.(service.id) ?? service.baseUrl;
 
   // Substitute path params (e.g. /receipt/{receipt_id}) from args.
+  // A trailing `*` ({id*}) means substitute RAW, preserving forward slashes, for a
+  // value that is itself a multi-segment route key (H-Index's "topicId/seq" id maps
+  // onto the two-segment /endpoints/:topicId/:seq detail route). The default form
+  // percent-encodes, which is correct for a single-segment param the backend reads
+  // whole (H-Pact's "topicId/seq" ringId on /rings/:ringId wants the %2F form).
   let path = tool.path;
   const consumedPathArgs = new Set<string>();
-  path = path.replace(/\{([a-zA-Z_][a-zA-Z0-9_]*)\}/g, (_, key: string) => {
+  path = path.replace(/\{([a-zA-Z_][a-zA-Z0-9_]*)(\*?)\}/g, (_, key: string, raw: string) => {
     if (!(key in args)) {
       throw new Error(
         `tool ${toolName} requires path parameter ${key}, missing from args`,
       );
     }
     consumedPathArgs.add(key);
-    return encodeURIComponent(String(args[key]));
+    const value = String(args[key]);
+    if (!raw) return encodeURIComponent(value);
+    // Raw form: encode each segment but keep the separators, so a slash routes and
+    // any other reserved character in a segment is still escaped. Reject traversal
+    // segments (., .., empty) so a path param cannot climb out of its tool's route
+    // (e.g. an id of "../../admin" reaching a sibling backend route).
+    const segments = value.split("/");
+    if (segments.some((s) => s === "" || s === "." || s === "..")) {
+      throw new Error(`tool ${toolName} path parameter ${key} has an invalid segment: ${value}`);
+    }
+    return segments.map(encodeURIComponent).join("/");
   });
 
   // Strip args reserved for transport-level concerns (payment_signature)

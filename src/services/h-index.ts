@@ -29,6 +29,29 @@ export const hIndex: ServiceDef = {
             type: "number",
             description: "Max results (default 20, max 100).",
           },
+          trust: {
+            type: "string",
+            description:
+              "Trust-tier policy over results. attested_only: only owner-signed on-chain " +
+              "registrations. observed_clean (default): attested plus clean third-party " +
+              "observed listings. observed_any: everything, with flags inline.",
+            enum: ["attested_only", "observed_clean", "observed_any"],
+          },
+          excludeFlags: {
+            type: "string",
+            description:
+              "Comma-separated safety flags to exclude across all tiers, e.g. 'drift,vuln'. " +
+              "Drops any listing carrying a named flag.",
+          },
+          paid: {
+            type: "string",
+            description:
+              "Filter by paid status (comma-separated): paid, gated, open, unknown.",
+          },
+          tags: {
+            type: "string",
+            description: "Filter by derived domain tags (comma-separated, matches ANY).",
+          },
         },
         additionalProperties: false,
       },
@@ -53,10 +76,11 @@ export const hIndex: ServiceDef = {
         additionalProperties: false,
       },
       method: "GET",
-      // id is a normal query arg: dispatch builds ?id=... from apiArgs via
-      // URLSearchParams (consistent with every other GET tool). It is not a
-      // path segment, so no {id} placeholder here.
-      path: "/endpoints",
+      // The detail read is the two-segment route GET /endpoints/:topicId/:seq. The id
+      // ("topicId/seq") carries the separator, so it maps via the raw {id*} placeholder
+      // (slashes preserved) rather than ?id=, which the backend ignores (it would fall
+      // back to the recent feed). See dispatch.ts path substitution.
+      path: "/endpoints/{id*}",
       authMode: "free",
     },
     {

@@ -103,6 +103,87 @@ test("a 5xx body is not relayed; a generic error is thrown", async () => {
   }
 });
 
+// ─── Route-shape guards ───────────────────────────────────────────────────
+// These lock the exact upstream URL each tool builds. The startup validator only
+// substring-checks a tool's path against the manifest, so it cannot catch a tool
+// that targets the WRONG route shape (e.g. /endpoints?id= silently returning the
+// recent feed instead of the /endpoints/:topicId/:seq detail). Asserting the built
+// URL here is the guard that does.
+
+function captureUrl(status: number, body: unknown): { restore: () => void; get: () => string } {
+  const cap: { url: string } = { url: "" };
+  globalThis.fetch = (async (url: string) => {
+    cap.url = String(url);
+    return new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json" } });
+  }) as typeof fetch;
+  return { restore: () => { globalThis.fetch = realFetch; }, get: () => cap.url };
+}
+
+test("h_index_get_listing targets the two-segment detail route with a literal slash", async () => {
+  const f = captureUrl(200, { id: "0.0.10490172/113" });
+  try {
+    await dispatchTool("h_index_get_listing", { id: "0.0.10490172/113" });
+    // Must hit /endpoints/<topic>/<seq> (literal slash), NOT ?id= and NOT a %2F-encoded
+    // single segment. ?id= is ignored by the backend and returns the recent feed.
+    assert.equal(f.get(), "https://h-index.xr-utilities.ai/endpoints/0.0.10490172/113");
+    assert.ok(!f.get().includes("?id="), "must not fall back to the ignored ?id= query");
+    assert.ok(!f.get().includes("%2F"), "the route separator must stay a literal slash");
+  } finally {
+    f.restore();
+  }
+});
+
+test("h_index_get_listing rejects a path-traversal id before any request fires", async () => {
+  let called = false;
+  globalThis.fetch = (async () => {
+    called = true;
+    return new Response("{}", { status: 200 });
+  }) as typeof fetch;
+  try {
+    await assert.rejects(
+      () => dispatchTool("h_index_get_listing", { id: "../../admin" }),
+      /invalid segment/,
+    );
+    assert.equal(called, false, "a traversal id must not reach the backend");
+  } finally {
+    globalThis.fetch = realFetch;
+  }
+});
+
+test("h_pact_get_ring keeps the single-segment encoded form (%2F)", async () => {
+  const f = captureUrl(200, { ringId: "0.0.10587224/2" });
+  try {
+    await dispatchTool("h_pact_get_ring", { ringId: "0.0.10587224/2" });
+    // H-Pact's /rings/:ringId reads the whole id as ONE segment, so the slash must be
+    // percent-encoded. This is the inverse of h_index_get_listing; the guard prevents a
+    // future "preserve slashes everywhere" change from breaking this route.
+    assert.equal(f.get(), "https://h-pact.xr-utilities.ai/rings/0.0.10587224%2F2");
+  } finally {
+    f.restore();
+  }
+});
+
+test("h_index_search forwards the trust-tier filters as query params", async () => {
+  const f = captureUrl(200, { mode: "semantic", results: [] });
+  try {
+    await dispatchTool("h_index_search", {
+      q: "registry",
+      trust: "observed_any",
+      excludeFlags: "drift,vuln",
+      paid: "open",
+      tags: "data",
+    });
+    const url = new URL(f.get());
+    assert.equal(url.pathname, "/endpoints");
+    assert.equal(url.searchParams.get("trust"), "observed_any");
+    assert.equal(url.searchParams.get("excludeFlags"), "drift,vuln");
+    assert.equal(url.searchParams.get("paid"), "open");
+    assert.equal(url.searchParams.get("tags"), "data");
+  } finally {
+    f.restore();
+  }
+});
+
 test("an invalid payment_signature surfaces before any request fires", async () => {
   let called = false;
   globalThis.fetch = (async () => {
