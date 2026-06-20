@@ -12,7 +12,9 @@ export const hIndex: ServiceDef = {
       description:
         "Free. Search the H-Index capability registry by keyword or semantic query. " +
         "Returns ranked listings of MCP servers, tool endpoints, and agent APIs with " +
-        "endpoint URL, description, pricing, owner, and MCP manifest snapshot.",
+        "endpoint URL, description, pricing, owner, MCP manifest snapshot, a trust label, " +
+        "and a `provider` field (the registrable domain of the endpoint, e.g. " +
+        "ottoai.services) that groups listings from the same company.",
       inputSchema: {
         type: "object",
         properties: {
