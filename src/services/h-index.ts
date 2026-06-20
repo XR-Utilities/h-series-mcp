@@ -64,7 +64,7 @@ export const hIndex: ServiceDef = {
     {
       name: "h_index_get_listing",
       description:
-        "Free. Get a specific H-Index listing by its ID (topic/sequence format, e.g. 0.0.10490172/42). " +
+        "Free. Get a specific H-Index listing by its ID (topic/sequence format, e.g. 0.0.10601198/42). " +
         "Returns full detail including MCP manifest, pricing, owner, registration date, and expiry.",
       inputSchema: {
         type: "object",
