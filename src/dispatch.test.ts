@@ -120,12 +120,12 @@ function captureUrl(status: number, body: unknown): { restore: () => void; get: 
 }
 
 test("h_index_get_listing targets the two-segment detail route with a literal slash", async () => {
-  const f = captureUrl(200, { id: "0.0.10490172/113" });
+  const f = captureUrl(200, { id: "0.0.10601198/113" });
   try {
-    await dispatchTool("h_index_get_listing", { id: "0.0.10490172/113" });
+    await dispatchTool("h_index_get_listing", { id: "0.0.10601198/113" });
     // Must hit /endpoints/<topic>/<seq> (literal slash), NOT ?id= and NOT a %2F-encoded
     // single segment. ?id= is ignored by the backend and returns the recent feed.
-    assert.equal(f.get(), "https://h-index.xr-utilities.ai/endpoints/0.0.10490172/113");
+    assert.equal(f.get(), "https://h-index.xr-utilities.ai/endpoints/0.0.10601198/113");
     assert.ok(!f.get().includes("?id="), "must not fall back to the ignored ?id= query");
     assert.ok(!f.get().includes("%2F"), "the route separator must stay a literal slash");
   } finally {
