@@ -11,6 +11,7 @@ forwards calls to the live HTTPS services:
 - H-Scope: wallet behavior scanning and entity-posture reads
 - H-Pact: membership-ring registry (create, admit, config)
 - H-Gate: agentic data-egress control (inspect text, config)
+- H-Cert: standing and owner-delegation layer (resolve, standing, principals, config)
 
 ## What it is
 

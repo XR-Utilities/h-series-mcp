@@ -163,6 +163,47 @@ test("h_pact_get_ring keeps the single-segment encoded form (%2F)", async () => 
   }
 });
 
+test("h_cert_standing encodes the CAIP-10 subject as one whole segment", async () => {
+  const f = captureUrl(200, { tier: "unrated", rank: 1 });
+  try {
+    await dispatchTool("h_cert_standing", { subject: "hedera:mainnet:0.0.10490145" });
+    // GET /standing/:subject reads the subject whole (c.req.param), so the CAIP-10
+    // colons are percent-encoded into a single path segment; no literal slash routes.
+    assert.equal(
+      f.get(),
+      "https://h-cert.xr-utilities.ai/standing/hedera%3Amainnet%3A0.0.10490145",
+    );
+  } finally {
+    f.restore();
+  }
+});
+
+test("h_cert_resolve posts the requirements body to /resolve", async () => {
+  const cap: { url: string; init?: RequestInit } = { url: "" };
+  globalThis.fetch = (async (url: string, init?: RequestInit) => {
+    cap.url = String(url);
+    cap.init = init;
+    return new Response(JSON.stringify({ ok: false }), {
+      status: 200,
+      headers: { "content-type": "application/json" },
+    });
+  }) as typeof fetch;
+  try {
+    await dispatchTool("h_cert_resolve", {
+      subject: "hedera:mainnet:0.0.1",
+      requirements: { minStanding: "watch", delegation: { delegatedBy: "hedera:mainnet:0.0.2" } },
+    });
+    assert.equal(cap.url, "https://h-cert.xr-utilities.ai/resolve");
+    assert.equal(cap.init?.method, "POST");
+    const sent = JSON.parse(String(cap.init?.body));
+    assert.equal(sent.subject, "hedera:mainnet:0.0.1");
+    assert.equal(sent.requirements.minStanding, "watch");
+    assert.equal(sent.requirements.delegation.delegatedBy, "hedera:mainnet:0.0.2");
+  } finally {
+    globalThis.fetch = realFetch;
+  }
+});
+
 test("h_index_search forwards the trust-tier filters as query params", async () => {
   const f = captureUrl(200, { mode: "semantic", results: [] });
   try {

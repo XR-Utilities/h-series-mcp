@@ -6,8 +6,9 @@ import { hRelay } from "./h-relay.js";
 import { hScope } from "./h-scope.js";
 import { hPact } from "./h-pact.js";
 import { hGate } from "./h-gate.js";
+import { hCert } from "./h-cert.js";
 
-export const SERVICES: ServiceDef[] = [hIndex, hSeal, hGrant, hRelay, hScope, hPact, hGate];
+export const SERVICES: ServiceDef[] = [hIndex, hSeal, hGrant, hRelay, hScope, hPact, hGate, hCert];
 
 export const ALL_TOOLS = SERVICES.flatMap((s) => s.tools);
 
