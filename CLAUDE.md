@@ -53,6 +53,15 @@ signing, dependencies, logging, or a disabled/relaxed control), append a `pendin
 entry to `SECURITY-LOG.md`. The master H-Series security architecture doc (private,
 H-Grant `SECURITY-ARCHITECTURE.md`) is the collector. No secrets, keys, or raw
 target identifiers in the log.
+A SECURITY-LOG entry (and any in-code security comment) describes controls that are
+WIRED, not intended: verify each claimed protection against the code before writing
+it. An entry that names a guard the path does not actually enforce (e.g. a "nonce
+replay guard" on a path that consumes no nonce) is worse than none, because it hides
+the gap. When a change adds an authorization path that parallels an existing one (a
+token-presenting OIDC owner alongside a body-signing wallet owner, say), it must
+replicate the security properties of the path it parallels, replay protection
+included: a path with no per-body signature does NOT inherit the signing verifier's
+single-use lock, so it needs an explicit record-level single-use nonce of its own.
 
 ### Financial change discipline (where this repo carries FINANCIAL-LOG.md)
 After any change that affects what a service charges or accepts (a price; a payment
