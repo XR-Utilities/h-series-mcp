@@ -59,6 +59,11 @@ if [ -f package.json ]; then
   else
     skip "no coverage script"
   fi
+  if grep -q '"docs:check"' package.json; then
+    npm run --silent docs:check && pass "docs drift" || fail "docs drift"
+  else
+    skip "no docs:check script"
+  fi
 else
   skip "no package.json"
 fi

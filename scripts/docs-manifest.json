@@ -1,0 +1,9 @@
+{
+  "_comment": "Documentation manifest, enforced by scripts/check-docs.mjs. `required` files must exist. Every env var the code consumes (a process.env.X use, or a Zod config-schema key in `configFiles` if this repo had one) must appear in .env.example unless listed in `envIgnore` (runtime/CI-injected vars that are deliberately not documented). A new config surface added without documenting it fails the gate. This repo is a stateless passthrough with no Zod config schema, so `configFiles` is empty and the env surface is discovered entirely from process.env uses in src/.",
+  "required": ["README.md", ".env.example"],
+  "configFiles": [],
+  "envIgnore": [
+    "NODE_ENV",
+    "CI"
+  ]
+}
