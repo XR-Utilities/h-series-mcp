@@ -54,6 +54,11 @@ if [ -f package.json ]; then
   else
     skip "no test script"
   fi
+  if grep -q '"coverage"' package.json; then
+    npm run --silent coverage && pass "tool/route coverage" || fail "tool/route coverage gap"
+  else
+    skip "no coverage script"
+  fi
 else
   skip "no package.json"
 fi

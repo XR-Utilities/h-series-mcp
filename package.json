@@ -19,6 +19,7 @@
     "start:http": "node dist/index.js --transport http",
     "dev": "tsc --watch",
     "typecheck": "tsc --noEmit",
+    "coverage": "node scripts/check-tool-coverage.mjs",
     "startup": "bash scripts/startup.sh",
     "closeout": "bash scripts/closeout.sh"
   },

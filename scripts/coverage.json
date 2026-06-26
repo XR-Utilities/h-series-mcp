@@ -1,0 +1,63 @@
+{
+  "_doc": "Classification for scripts/check-tool-coverage.mjs. Every tool name in src/services/*.ts and every Express route in src/transport/http.ts must appear under covered (names the test) or waived (names an honest reason). A new tool or route fails CI until classified.",
+  "tools": {
+    "covered": {
+      "h_index_search": "src/tools.test.ts (contract) + src/dispatch.test.ts (trust-tier query passthrough)",
+      "h_index_get_listing": "src/tools.test.ts (contract) + src/dispatch.test.ts (two-segment route, traversal guard, 4xx/5xx relay)",
+      "h_index_categories": "src/tools.test.ts (contract)",
+      "h_index_register": "src/tools.test.ts (contract) + src/dispatch.test.ts (402 challenge passthrough)",
+      "h_index_renew": "src/tools.test.ts (contract)",
+      "h_index_revoke": "src/tools.test.ts (contract)",
+      "h_index_config": "src/tools.test.ts (contract)",
+      "h_seal_anchor": "src/tools.test.ts (contract)",
+      "h_seal_anchor_request": "src/tools.test.ts (contract)",
+      "h_seal_get_receipt": "src/tools.test.ts (contract)",
+      "h_seal_get_request": "src/tools.test.ts (contract)",
+      "h_seal_list_receipts": "src/tools.test.ts (contract)",
+      "h_seal_list_requests": "src/tools.test.ts (contract)",
+      "h_seal_verify": "src/tools.test.ts (contract)",
+      "h_seal_config": "src/tools.test.ts (contract)",
+      "h_grant_publish": "src/tools.test.ts (contract)",
+      "h_grant_call": "src/tools.test.ts (contract)",
+      "h_grant_revoke": "src/tools.test.ts (contract)",
+      "h_grant_config": "src/tools.test.ts (contract)",
+      "h_relay_send": "src/tools.test.ts (contract)",
+      "h_relay_read": "src/tools.test.ts (contract)",
+      "h_relay_ack": "src/tools.test.ts (contract)",
+      "h_relay_get_delivery": "src/tools.test.ts (contract)",
+      "h_relay_list_deliveries": "src/tools.test.ts (contract)",
+      "h_relay_heartbeat": "src/tools.test.ts (contract)",
+      "h_relay_publish_heartbeat": "src/tools.test.ts (contract)",
+      "h_relay_relay": "src/tools.test.ts (contract)",
+      "h_relay_get_relay": "src/tools.test.ts (contract)",
+      "h_relay_config": "src/tools.test.ts (contract)",
+      "h_scope_scan": "src/tools.test.ts (contract) + src/dispatch.test.ts (payment_signature pre-flight validation)",
+      "h_scope_config": "src/tools.test.ts (contract)",
+      "h_pact_create_ring": "src/tools.test.ts (contract)",
+      "h_pact_admit": "src/tools.test.ts (contract)",
+      "h_pact_evict": "src/tools.test.ts (contract)",
+      "h_pact_update_policy": "src/tools.test.ts (contract)",
+      "h_pact_renew": "src/tools.test.ts (contract)",
+      "h_pact_get_ring": "src/tools.test.ts (contract) + src/dispatch.test.ts (single-segment %2F-encoded route)",
+      "h_pact_config": "src/tools.test.ts (contract)",
+      "h_gate_inspect": "src/tools.test.ts (contract)",
+      "h_gate_config": "src/tools.test.ts (contract)",
+      "h_cert_standing": "src/tools.test.ts (contract) + src/dispatch.test.ts (CAIP-10 single-segment encoding)",
+      "h_cert_resolve": "src/tools.test.ts (contract) + src/dispatch.test.ts (POST body shape)",
+      "h_cert_principals": "src/tools.test.ts (contract)",
+      "h_cert_config": "src/tools.test.ts (contract)"
+    },
+    "waived": {}
+  },
+  "routes": {
+    "covered": {},
+    "waived": {
+      "/": "Static service banner JSON (version + endpoint pointers); no business logic to test.",
+      "/healthz": "Trivial liveness probe returning static {status, service, version}; no logic.",
+      "/agents.json": "Static manifest derived from ALL_TOOLS, which src/tools.test.ts already guards; no per-route logic.",
+      "/.well-known/agents.json": "Same static manifest as /agents.json, served at the well-known path.",
+      "/llms.txt": "Static text manifest derived from ALL_TOOLS (already guarded); no per-route logic.",
+      "/robots.txt": "Static crawler directives; no logic."
+    }
+  }
+}

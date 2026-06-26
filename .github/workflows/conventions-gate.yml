@@ -16,3 +16,8 @@ jobs:
         env:
           GITHUB_EVENT_BEFORE: ${{ github.event.before }}
         run: bash scripts/check-conventions.sh
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: tool coverage
+        run: npm run coverage
