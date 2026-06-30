@@ -86,6 +86,17 @@ touches a chain, end to end); a Quality + Functionality + Security audit of the 
 looping until clean; and the closeout gate (typecheck, full tests, the conventions
 gate, docs updated, handoff refreshed) before handoff.
 
+The smoke is a living asset, not a one-time write: when you add a feature, route, or
+service capability, ADD ITS SMOKE SECTION in the same commit. Two drifts to gate
+against, both of which we have hit: a smoke that silently stopped running (an
+un-awaited async boot, a config key that died in a migration) and a feature that
+shipped with no coverage. Where a repo has an e2e smoke, run it in CI against an
+ephemeral datastore (so rot is caught automatically) and enforce a coverage check
+that fails when a registered route is neither covered by a smoke section nor waived
+with a reason (so a new surface cannot escape the coverage decision). H-Grant is the
+reference (`scripts/check-smoke-coverage.ts` + `scripts/smoke-coverage.json`, wired
+into closeout and CI).
+
 A change is not "done" at "pushed". Pushed is not deployed: some surfaces auto-deploy
 and some do not, so verify the live service runs the pushed commit before claiming it
 shipped. And a security- or money-relevant change is not done until its behavior is
