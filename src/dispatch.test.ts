@@ -213,6 +213,7 @@ test("h_index_search forwards the trust-tier filters as query params", async () 
       excludeFlags: "drift,vuln",
       paid: "open",
       tags: "data",
+      sort: "popular",
     });
     const url = new URL(f.get());
     assert.equal(url.pathname, "/endpoints");
@@ -220,6 +221,7 @@ test("h_index_search forwards the trust-tier filters as query params", async () 
     assert.equal(url.searchParams.get("excludeFlags"), "drift,vuln");
     assert.equal(url.searchParams.get("paid"), "open");
     assert.equal(url.searchParams.get("tags"), "data");
+    assert.equal(url.searchParams.get("sort"), "popular");
   } finally {
     f.restore();
   }

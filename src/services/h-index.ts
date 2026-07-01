@@ -54,6 +54,14 @@ export const hIndex: ServiceDef = {
             type: "string",
             description: "Filter by derived domain tags (comma-separated, matches ANY).",
           },
+          sort: {
+            type: "string",
+            description:
+              "Sort axis for the keyword/recent feed (ignored for a semantic `q` query). " +
+              "recent (default): trust tier then recency. popular: an advisory top-N by an " +
+              "external popularity signal (github stars, downloads), composed within the trust filter.",
+            enum: ["recent", "popular"],
+          },
         },
         additionalProperties: false,
       },
