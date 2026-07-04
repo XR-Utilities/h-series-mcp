@@ -15,7 +15,7 @@ export const hScope: ServiceDef = {
   label: "H-Scope",
   baseUrl: "https://h-scope.xr-utilities.ai",
   manifestUrl: "https://h-scope.xr-utilities.ai/config",
-  knownSchemaVersions: ["0.0.4"],
+  knownSchemaVersions: ["0.0.5"],
   tools: [
     {
       name: "h_scope_config",
