@@ -39,7 +39,9 @@ export const hScope: ServiceDef = {
         "read, computed live from public chain data. Returns deterministic signals plus, in the " +
         "fuller modes, an activity/posture summary and AI-written reasoning. This is a read of a " +
         "third-party address (not payer-bound). Pass subject (the address or CAIP-10 to scan), an " +
-        "optional mode, and an x402 payment_signature.",
+        "optional mode, an optional relationshipTo (a second address to scan the subject IN " +
+        "RELATION TO: did they transact, do they share counterparties, how do their postures " +
+        "compare), and an x402 payment_signature.",
       inputSchema: {
         type: "object",
         properties: {
@@ -51,6 +53,14 @@ export const hScope: ServiceDef = {
             type: "string",
             enum: ["pre_auth", "standing", "full"],
             description: "Scan depth. Default 'full'.",
+          },
+          relationshipTo: {
+            type: "string",
+            description:
+              "Optional second address (chain address or CAIP-10). When set, the response adds a " +
+              "deterministic `relationship` block: direct interaction between the two, shared " +
+              "counterparties (a 2-hop link), and a posture comparison. Same-chain pairs get the " +
+              "on-chain checks; cross-chain pairs get the posture comparison only.",
           },
           payment_signature: { type: "string", description: "x402 payment header (base64)." },
         },
