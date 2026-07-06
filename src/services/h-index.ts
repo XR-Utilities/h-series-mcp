@@ -1,4 +1,5 @@
 import type { ServiceDef } from "../types.js";
+import { priceUsd } from "../prices.js";
 
 export const hIndex: ServiceDef = {
   id: "h-index",
@@ -106,9 +107,12 @@ export const hIndex: ServiceDef = {
     },
     {
       name: "h_index_register",
-      description:
-        "Paid ($10.00 USD). Register a new service on H-Index. Requires a TIP-712/EIP-712 " +
-        "signature and x402 payment. Pass the signed receipt body fields plus payment_signature.",
+      get description() {
+        return (
+        `Paid ($${priceUsd("h_index_register")} USD). Register a new service on H-Index. Requires a TIP-712/EIP-712 ` +
+        "signature and x402 payment. Pass the signed receipt body fields plus payment_signature."
+        );
+      },
       inputSchema: {
         type: "object",
         properties: {
@@ -135,10 +139,13 @@ export const hIndex: ServiceDef = {
     },
     {
       name: "h_index_renew",
-      description:
-        "Paid ($5.00 USD). Renew an existing H-Index listing before it expires, extending its term. " +
+      get description() {
+        return (
+        `Paid ($${priceUsd("h_index_renew")} USD). Renew an existing H-Index listing before it expires, extending its term. ` +
         "Requires a TIP-712/EIP-712 signature from the listing owner and x402 payment. Pass the " +
-        "signed body fields plus payment_signature.",
+        "signed body fields plus payment_signature."
+        );
+      },
       inputSchema: {
         type: "object",
         properties: {

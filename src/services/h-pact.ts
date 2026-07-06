@@ -1,4 +1,5 @@
 import type { ServiceDef } from "../types.js";
+import { priceUsd } from "../prices.js";
 
 /**
  * H-Pact: signed, on-chain membership rings. The MCP server exposes the public
@@ -58,12 +59,15 @@ export const hPact: ServiceDef = {
     },
     {
       name: "h_pact_create_ring",
-      description:
-        "Paid ($10 USD). Create a new membership ring under owner-signed rules. Requires a " +
+      get description() {
+        return (
+        `Paid ($${priceUsd("h_pact_create_ring")} USD). Create a new membership ring under owner-signed rules. Requires a ` +
         "TIP-712/EIP-712/Ed25519 owner signature over the canonical create body, plus an x402 " +
         "payment. Admit, evict, policy update, and renew are free afterward. Pass governanceMode " +
         "(only 'single-owner' is active in v1), optional policy, ownerAccountId, ringTopicId, " +
-        "issuedAt, signature, and payment_signature.",
+        "issuedAt, signature, and payment_signature."
+        );
+      },
       inputSchema: {
         type: "object",
         properties: {

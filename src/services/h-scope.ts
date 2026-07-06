@@ -1,4 +1,5 @@
 import type { ServiceDef } from "../types.js";
+import { priceUsd } from "../prices.js";
 
 /**
  * H-Scope: universal multi-chain wallet behavior scanner. The MCP server exposes
@@ -34,14 +35,17 @@ export const hScope: ServiceDef = {
     },
     {
       name: "h_scope_scan",
-      description:
-        "Paid ($0.10 USD). Scan an on-chain wallet for behavioral signals and an entity-posture " +
+      get description() {
+        return (
+        `Paid ($${priceUsd("h_scope_scan")} USD). Scan an on-chain wallet for behavioral signals and an entity-posture ` +
         "read, computed live from public chain data. Returns deterministic signals plus, in the " +
         "fuller modes, an activity/posture summary and AI-written reasoning. This is a read of a " +
         "third-party address (not payer-bound). Pass subject (the address or CAIP-10 to scan), an " +
         "optional mode, an optional relationshipTo (a second address to scan the subject IN " +
         "RELATION TO: did they transact, do they share counterparties, how do their postures " +
-        "compare), and an x402 payment_signature.",
+        "compare), and an x402 payment_signature."
+        );
+      },
       inputSchema: {
         type: "object",
         properties: {

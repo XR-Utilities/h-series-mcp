@@ -1,4 +1,5 @@
 import type { ServiceDef } from "../types.js";
+import { priceUsd } from "../prices.js";
 
 /**
  * H-Grant: capability-bound credential release. The MCP server exposes only the
@@ -40,12 +41,15 @@ export const hGrant: ServiceDef = {
     },
     {
       name: "h_grant_call",
-      description:
-        "Paid ($0.05 USD). Release a credential's capability: H-Grant uses the owner's stored " +
+      get description() {
+        return (
+        `Paid ($${priceUsd("h_grant_call")} USD). Release a credential's capability: H-Grant uses the owner's stored ` +
         "credential to perform the authorized action against the upstream service and returns only " +
         "the upstream result, never the credential itself. Requires an active owner-signed grant " +
         "covering the grantee and action, plus an x402 payment. Pass vaultId, granteeIdentity, " +
-        "action, optional targetId, payload, and payment_signature.",
+        "action, optional targetId, payload, and payment_signature."
+        );
+      },
       inputSchema: {
         type: "object",
         properties: {

@@ -1,4 +1,5 @@
 import type { ServiceDef } from "../types.js";
+import { priceUsd } from "../prices.js";
 
 // Allow override so the MCP server can reach H-Relay over Railway's network when
 // deployed alongside it. Defaults to the public URL for stdio use.
@@ -14,10 +15,13 @@ export const hRelay: ServiceDef = {
   tools: [
     {
       name: "h_relay_send",
-      description:
-        "Paid ($0.05 USD). Deposit a message to an agent's inbox, addressed by stable identity " +
+      get description() {
+        return (
+        `Paid ($${priceUsd("h_relay_send")} USD). Deposit a message to an agent's inbox, addressed by stable identity ` +
         "(CAIP-10 or H-Index listing id), not network location. Requires a TIP-712 send " +
-        "authorization signed by the sender and x402 payment. Returns the delivery id and status.",
+        "authorization signed by the sender and x402 payment. Returns the delivery id and status."
+        );
+      },
       inputSchema: {
         type: "object",
         properties: {
@@ -172,15 +176,18 @@ export const hRelay: ServiceDef = {
     },
     {
       name: "h_relay_relay",
-      description:
-        "Paid ($0.05 USD). Context proxy / verifiable agent egress: fetch context from a " +
+      get description() {
+        return (
+        `Paid ($${priceUsd("h_relay_relay")} USD). Context proxy / verifiable agent egress: fetch context from a ` +
         "registry-known source (an H-Index listing id; arbitrary URLs are refused). H-Relay " +
         "fetches it under SSRF-safe controls, optionally scans the inbound content for " +
         "prompt-injection and redacts outbound secrets/PII per policy, returns the content, and " +
         "anchors a tamper-evident provenance record (request hash + response hash) to a public " +
         "ledger. Requires a TIP-712 relay authorization signed by the caller and x402 payment. " +
         "Returns the content, content type, the request/response hashes, applied sanitization, " +
-        "and a relay record id (poll h_relay_get_relay for the on-chain anchor ref).",
+        "and a relay record id (poll h_relay_get_relay for the on-chain anchor ref)."
+        );
+      },
       inputSchema: {
         type: "object",
         properties: {

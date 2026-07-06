@@ -14,6 +14,8 @@
 import { runStdio } from "./transport/stdio.js";
 import { runHttp } from "./transport/http.js";
 import { validateAllServices } from "./validate.js";
+import { initPrices } from "./prices.js";
+import { SERVICES } from "./services/index.js";
 import { log } from "./logger.js";
 
 function parseArgs(argv: string[]): { transport: "stdio" | "http"; port: number; skipValidate: boolean } {
@@ -51,6 +53,15 @@ async function main(): Promise<void> {
     if (anyError && process.env["MCP_FAIL_ON_DRIFT"] === "1") {
       process.exit(2);
     }
+  }
+
+  // Load each backend's live price once so paid-tool descriptions show the current
+  // fee instead of a hardcoded string. Best-effort: a failure leaves the fallback
+  // in place and never blocks startup.
+  try {
+    await initPrices(SERVICES);
+  } catch (e) {
+    log.warn("price init failed; using hardcoded fallbacks", { detail: (e as Error).message });
   }
 
   if (transport === "stdio") {

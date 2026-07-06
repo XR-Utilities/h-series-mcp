@@ -1,4 +1,5 @@
 import type { ServiceDef } from "../types.js";
+import { priceUsd } from "../prices.js";
 
 // Allow override so the MCP server can reach H-Seal over Railway's private
 // network when deployed alongside it. Avoids Cloudflare bot challenges on
@@ -14,10 +15,13 @@ export const hSeal: ServiceDef = {
   tools: [
     {
       name: "h_seal_anchor",
-      description:
-        "Paid ($0.05 USD). Anchor a cryptographic receipt on Hedera Consensus Service. " +
+      get description() {
+        return (
+        `Paid ($${priceUsd("h_seal_anchor")} USD). Anchor a cryptographic receipt on Hedera Consensus Service. ` +
         "Requires a TIP-712/EIP-712 signed receipt payload and x402 payment. " +
-        "Returns the receipt ID, consensus timestamp, and payment transaction ID.",
+        "Returns the receipt ID, consensus timestamp, and payment transaction ID."
+        );
+      },
       inputSchema: {
         type: "object",
         properties: {

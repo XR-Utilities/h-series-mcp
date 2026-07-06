@@ -1,4 +1,5 @@
 import type { ServiceDef } from "../types.js";
+import { priceUsd } from "../prices.js";
 
 /**
  * H-Gate: agentic data-egress control (DLP). The MCP server exposes the public
@@ -33,13 +34,16 @@ export const hGate: ServiceDef = {
     },
     {
       name: "h_gate_inspect",
-      description:
-        "Paid ($0.10 USD). Inspect text an agent is about to send across a boundary and apply a " +
+      get description() {
+        return (
+        `Paid ($${priceUsd("h_gate_inspect")} USD). Inspect text an agent is about to send across a boundary and apply a ` +
         "data-egress policy. Returns a decision (allow, redact, or block), the redacted text, the " +
         "detections (entity type, sensitivity, detector, span), and per-type counts. A redact or " +
         "block emits an H-Seal receipt so the action is provable. Pass text (the content to " +
         "inspect), an optional policy (a named policy: redact-all, block-secrets-redact-pii, or " +
-        "block-critical; default block-secrets-redact-pii), and an x402 payment_signature.",
+        "block-critical; default block-secrets-redact-pii), and an x402 payment_signature."
+        );
+      },
       inputSchema: {
         type: "object",
         properties: {
