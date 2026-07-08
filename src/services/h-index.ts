@@ -110,7 +110,9 @@ export const hIndex: ServiceDef = {
       get description() {
         return (
         `Paid ($${priceUsd("h_index_register")} USD). Register a new service on H-Index. Requires a TIP-712/EIP-712 ` +
-        "signature and x402 payment. Pass the signed receipt body fields plus payment_signature."
+        "signature and x402 payment. Pass the signed receipt body fields plus payment_signature. " +
+        "Optionally set slaReceiptRef to advertise that the service anchors H-Seal proof-of-execution " +
+        "receipts (a two-sided, tamper-proof delivery record); see github.com/XR-Utilities/h-seal-provider."
         );
       },
       inputSchema: {
@@ -122,6 +124,7 @@ export const hIndex: ServiceDef = {
           pricing: { type: "string", description: "Pricing info (JSON string)." },
           category: { type: "string", description: "Category." },
           mcpManifest: { type: "string", description: "MCP manifest JSON snapshot (optional)." },
+          slaReceiptRef: { type: "string", description: "Optional. Reference (H-Seal topic id, URL, or CAIP ref) where the service anchors proof-of-execution receipts. Signed into the listing; advertises H-Seal anchoring in discovery. Not validated at registration." },
           ownerAccountId: { type: "string", description: "CAIP-10 identity of the publisher." },
           registryTopicId: { type: "string", description: "HCS registry topic ID." },
           issuedAt: { type: "number", description: "Unix timestamp of signature." },
