@@ -1,7 +1,7 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "h-series-skills",
-  "description": "Skills for the H-Series on Hedera: discover and register agentic services on H-Index (the capability registry for the agentic economy), and produce verifiable two-party proof-of-execution receipts via H-Seal with zero code.",
+  "description": "Skills for the H-Series, a family of Hedera services for the agentic economy. Connect one hosted MCP server for the whole suite (registry, proof-of-execution, authorization, transport, egress control, standing, rings, wallet posture), with deep-dives on the client-side flows (signing, x402 payment, zero-code receipt anchoring).",
   "owner": {
     "name": "XR Utilities",
     "url": "https://xr-utilities.ai"
@@ -9,7 +9,7 @@
   "plugins": [
     {
       "name": "h-series",
-      "description": "Discover and register agentic services (MCP servers, x402-paid APIs, agent tools) on H-Index, and anchor proof-of-execution receipts on H-Seal. Built on Hedera Consensus Service.",
+      "description": "Work with the whole H-Series suite on Hedera through one hosted MCP server: discover/register agentic services (H-Index), prove execution (H-Seal), scoped authorization (H-Grant), agent transport (H-Relay), egress control (H-Gate), standing (H-Cert), rings (H-Pact), and wallet posture (H-Scope). Built on Hedera Consensus Service.",
       "version": "0.1.0",
       "author": {
         "name": "XR Utilities",
