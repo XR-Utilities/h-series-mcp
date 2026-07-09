@@ -8,7 +8,13 @@ description: "How to scan an on-chain wallet or address for behavioral signals a
 H-Scope scans a single on-chain address and returns deterministic behavioral signals plus an
 entity-posture score: a safety read an agent can consult before it transacts. It is a
 standing safety input for the rest of the suite (a payment path can check posture before
-releasing funds). Multi-chain.
+releasing funds). Multi-chain across XRPL, Stellar, Hedera, Base, and Solana.
+
+The read is trustworthy by construction: the scores are a deterministic, reproducible
+function of public on-chain data, and the labeled calibration behind them is anchored on
+chain (a versioned, operator-signed corpus on Hedera Consensus Service topic `0.0.10631992`),
+so an agent or auditor can independently check the basis for a posture read. Every signal is
+a descriptive behavioral descriptor, never a risk, compliance, or sanctions verdict.
 
 Tools are on the H-Series MCP server (`h_scope_*`); see the `h-series-suite` skill to connect.
 Host for direct HTTP: `https://h-scope.xr-utilities.ai` (read `GET /config`).
