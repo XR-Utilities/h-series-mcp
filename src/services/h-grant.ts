@@ -95,6 +95,32 @@ export const hGrant: ServiceDef = {
             additionalProperties: false,
           },
           requiredAttestations: { type: "array", items: { type: "string" }, description: "Required attestations (default [])." },
+          requirePosture: {
+            type: "object",
+            description:
+              "Optional H-Scope posture gate. Release only if the chosen subject's on-chain behavior tier " +
+              "meets minTier; omit to leave the grant ungated. Owner-signed, so it must be part of the body " +
+              "you sign (canonical order does not matter; the backend re-derives it).",
+            properties: {
+              subject: {
+                type: "string",
+                enum: ["grantee", "target"],
+                description: "Whose wallet H-Scope scores: the call's target/counterparty, or the grantee.",
+              },
+              minTier: {
+                type: "string",
+                enum: ["none", "minimal", "moderate", "institutional", "core-institutional"],
+                description: "Minimum posture tier (low to high) required to allow a release.",
+              },
+              onUnknown: {
+                type: "string",
+                enum: ["allow", "deny"],
+                description: "What an unknown/unreachable/unscorable posture means: allow (fail-open) or deny.",
+              },
+            },
+            required: ["minTier"],
+            additionalProperties: false,
+          },
           validUntil: { type: "number", description: "Expiry, unix seconds." },
           issuedAt: { type: "number", description: "Signature timestamp, unix seconds." },
           nonce: { type: "string", description: "Replay nonce." },
