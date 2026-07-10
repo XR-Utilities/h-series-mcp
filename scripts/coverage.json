@@ -9,6 +9,7 @@
       "h_index_renew": "src/tools.test.ts (contract)",
       "h_index_revoke": "src/tools.test.ts (contract)",
       "h_index_config": "src/tools.test.ts (contract)",
+      "h_index_risk_events": "src/tools.test.ts (contract) + src/dispatch.test.ts (CAIP-10 subject encoded as one segment, limit forwarded as query)",
       "h_seal_anchor": "src/tools.test.ts (contract)",
       "h_seal_anchor_request": "src/tools.test.ts (contract)",
       "h_seal_get_receipt": "src/tools.test.ts (contract)",
