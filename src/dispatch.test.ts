@@ -178,6 +178,36 @@ test("h_cert_standing encodes the CAIP-10 subject as one whole segment", async (
   }
 });
 
+test("h_index_risk_events encodes the CAIP-10 subject as one whole segment", async () => {
+  const f = captureUrl(200, { subject: "hedera:mainnet:0.0.10490145", events: [] });
+  try {
+    await dispatchTool("h_index_risk_events", { subject: "hedera:mainnet:0.0.10490145" });
+    // GET /risk-events/:subject reads the subject whole (c.req.param), so the CAIP-10
+    // colons are percent-encoded into a single path segment; no literal slash routes.
+    // Mirrors h_cert_standing, the inverse of h_index_get_listing's two-segment {id*}.
+    assert.equal(
+      f.get(),
+      "https://h-index.xr-utilities.ai/risk-events/hedera%3Amainnet%3A0.0.10490145",
+    );
+    assert.ok(!f.get().includes("?subject="), "subject must route as a path segment, not a query");
+  } finally {
+    f.restore();
+  }
+});
+
+test("h_index_risk_events forwards limit as a query param on the subject route", async () => {
+  const f = captureUrl(200, { subject: "hedera:mainnet:0.0.1", events: [] });
+  try {
+    await dispatchTool("h_index_risk_events", { subject: "hedera:mainnet:0.0.1", limit: 50 });
+    const url = new URL(f.get());
+    // pathname keeps the percent-encoded CAIP-10 colons (one whole segment).
+    assert.equal(url.pathname, "/risk-events/hedera%3Amainnet%3A0.0.1");
+    assert.equal(url.searchParams.get("limit"), "50");
+  } finally {
+    f.restore();
+  }
+});
+
 test("h_cert_resolve posts the requirements body to /resolve", async () => {
   const cap: { url: string; init?: RequestInit } = { url: "" };
   globalThis.fetch = (async (url: string, init?: RequestInit) => {

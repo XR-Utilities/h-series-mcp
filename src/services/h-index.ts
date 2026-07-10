@@ -191,6 +191,39 @@ export const hIndex: ServiceDef = {
       bodyFromArgs: true,
     },
     {
+      name: "h_index_risk_events",
+      description:
+        "Free. Read the public risk-event track record an Agent Behavioral Standing (ABS) subject " +
+        "has accrued on H-Index: the malicious/suspicious audit events anchored on the shared SIEM " +
+        "audit topic, indexed and filtered to one subject. Returns { subject, events } where each " +
+        "event is a public-safe scalar record { evt, severity, product, consensusTimestamp }; the " +
+        "event context fields and signatures are never exposed. Pair with h_cert_standing (which " +
+        "carries the abs.risk load/band/cap evidence) for the subject's full track record. These " +
+        "are public on-chain facts, not a rating or a verdict. Pass `subject` (the CAIP-10 id) and " +
+        "an optional `limit` (1-200).",
+      inputSchema: {
+        type: "object",
+        properties: {
+          subject: {
+            type: "string",
+            description: "The subject whose risk events to read: a chain address or CAIP-10 account id.",
+          },
+          limit: {
+            type: "number",
+            description: "Max events to return (1-200, default 200).",
+          },
+        },
+        required: ["subject"],
+        additionalProperties: false,
+      },
+      method: "GET",
+      // Single-segment route GET /risk-events/:subject. The subject is read whole by the
+      // backend (c.req.param("subject")), so it maps via the default {subject} placeholder
+      // (percent-encoded), like h_cert_standing and NOT the raw {id*} multi-segment form.
+      path: "/risk-events/{subject}",
+      authMode: "free",
+    },
+    {
       name: "h_index_config",
       description:
         "Free. Get H-Index registry configuration: topic ID, pricing, accepted payment methods.",

@@ -102,9 +102,13 @@ export const hCert: ServiceDef = {
       description:
         "Free. Get the current signed STANDING verdict for a subject: an advisory, " +
         "behavior-backed read computed live from the H-Series signals. Returns the tier " +
-        "(trusted|watch|unrated|suspended|revoked), rank, ruleset version, evidence, asOf, and " +
-        "the operator signature. Standing is advisory, never enforcing; a verdict is a " +
-        "point-in-time signal, not a guarantee. Pass `subject` (the CAIP-10 id).",
+        "(trusted|watch|unrated|suspended|revoked), rank, assessedTier, ruleset version, evidence, " +
+        "asOf, and the operator signature. For an Agent Behavioral Standing (ABS) subject the " +
+        "evidence carries an `abs.risk` entry (the decayed risk load, its band, and the derived " +
+        "cap) computed from the subject's H-Index risk events; pair this read with " +
+        "h_index_risk_events for the underlying public event list. Standing is advisory, never " +
+        "enforcing; a verdict is a point-in-time signal, not a guarantee. Pass `subject` (the " +
+        "CAIP-10 id).",
       inputSchema: {
         type: "object",
         properties: {

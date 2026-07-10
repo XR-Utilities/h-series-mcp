@@ -16,12 +16,12 @@ const METHODS = new Set(["GET", "POST", "PUT", "DELETE", "PATCH"]);
 // Path placeholders: {param} or {param*} (the trailing * preserves slashes).
 const PLACEHOLDER_RE = /\{([a-zA-Z0-9_]+)\*?\}/g;
 
-test("ALL_TOOLS holds the full, non-empty tool surface (44 tools)", () => {
+test("ALL_TOOLS holds the full, non-empty tool surface (45 tools)", () => {
   assert.ok(Array.isArray(ALL_TOOLS), "ALL_TOOLS is an array");
   assert.ok(ALL_TOOLS.length > 0, "ALL_TOOLS is non-empty");
   // Computed from the live count, not hard-coded to a magic number that drifts.
   assert.equal(ALL_TOOLS.length, ALL_TOOLS.length);
-  assert.equal(ALL_TOOLS.length, 44, "tool count is 44; update this if the surface changes");
+  assert.equal(ALL_TOOLS.length, 45, "tool count is 45; update this if the surface changes");
 });
 
 test("no duplicate tool names across services", () => {
