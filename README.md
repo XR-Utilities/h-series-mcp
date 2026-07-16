@@ -4,7 +4,7 @@ Model Context Protocol (MCP) server that is the public front door to the
 H-Series backends. It exposes each backend's endpoints as MCP tools and
 forwards calls to the live HTTPS services:
 
-- H-Index: capability registry (search, listings, register, renew, revoke, config)
+- H-Index: capability registry (search, listings, register, renew, revoke, risk events, config)
 - H-Seal: receipt anchoring and verification
 - H-Grant: credential vaults and authorized capability release
 - H-Relay: agent message delivery, inbox, heartbeat
