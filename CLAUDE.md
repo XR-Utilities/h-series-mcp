@@ -10,10 +10,10 @@ These apply to every repo in the H-Series. Repo-specific instructions live OUTSI
 the synced block.
 
 ### Authorship
-- Commit author identity: `XRPL-Utilities <xrpl-utilities@proton.me>` (the
+- Commit author identity: `XR-Utilities <xr-utilities@proton.me>` (the
   XR-Utilities org account). Never a personal email.
 - The H-Series contact email is `xr-utilities@proton.me` (docs, manifests, public
-  contact fields), distinct from the commit author email.
+  contact fields), the same address used for commit authorship.
 - Commits, PRs, and code contain NO AI or assistant attribution of any kind: no
   "authored by", "co-authored by", or "generated with" referencing Claude, AI, or
   an assistant, and no such markers in code comments. Authorship is the human
