@@ -106,7 +106,11 @@ export const hCert: ServiceDef = {
         "asOf, and the operator signature. For an Agent Behavioral Standing (ABS) subject the " +
         "evidence carries an `abs.risk` entry (the decayed risk load, its band, and the derived " +
         "cap) computed from the subject's H-Index risk events; pair this read with " +
-        "h_index_risk_events for the underlying public event list. Standing is advisory, never " +
+        "h_index_risk_events for the underlying public event list. The response also carries a " +
+        "read-time `sanctions` block { listed, list: 'ofac-sdn', effectiveTier: 'revoked', " +
+        "advisory: true }: a subject on the OFAC SDN list reads `sanctions.effectiveTier: " +
+        "'revoked'` while the signed behavioral verdict itself is unchanged and still verifiable. " +
+        "This overlay is advisory and never anchored. Standing is advisory, never " +
         "enforcing; a verdict is a point-in-time signal, not a guarantee. Pass `subject` (the " +
         "CAIP-10 id).",
       inputSchema: {

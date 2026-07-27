@@ -94,7 +94,16 @@ export const hGrant: ServiceDef = {
             },
             additionalProperties: false,
           },
-          requiredAttestations: { type: "array", items: { type: "string" }, description: "Required attestations (default [])." },
+          requiredAttestations: {
+            type: "array",
+            items: { type: "string" },
+            description:
+              "Required attestations (default []). Policies accept H-Cert requirement strings: " +
+              "`hcert:standing:<tier>` (tier one of trusted|watch|unrated|suspended|revoked; the " +
+              "grantee must hold that tier or better) and optional `hcert:stale:<seconds>` (reject a " +
+              "standing verdict older than N seconds). `hcert:delegation:<owner>` and " +
+              "`hcert:scope:<scope>` also exist for owner-delegation requirements.",
+          },
           requirePosture: {
             type: "object",
             description:
