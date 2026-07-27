@@ -49,7 +49,7 @@ const SPECS: Record<PriceKey, PriceSpec> = {
   h_relay_relay: { serviceId: "h-relay", field: "relay_fetch_price_usd_cents", fallbackCents: 5 },
   h_scope_scan: { serviceId: "h-scope", field: "pricing.scanPriceUsdCents", fallbackCents: 10 },
   h_gate_inspect: { serviceId: "h-gate", field: "inspectPriceUsdCents", fallbackCents: 10 },
-  h_pact_create_ring: { serviceId: "h-pact", field: "pricing.ringCreatePriceUsdCents", fallbackCents: 1000 },
+  h_pact_create_ring: { serviceId: "h-pact", field: "pricing.ringCreatePriceUsdCents", fallbackCents: 500 },
 };
 
 const FETCH_TIMEOUT_MS = 4_000;
