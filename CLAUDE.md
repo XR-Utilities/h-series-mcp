@@ -134,10 +134,10 @@ holds no wallet and takes no cut: it forwards the caller's x402 `payment_signatu
 to the backend, where settlement lands. Never put secrets or keys in this public repo.
 
 ## Git and authorship
-- Commit author identity: `XRPL-Utilities <xrpl-utilities@proton.me>` (the
+- Commit author identity: `XR-Utilities <xr-utilities@proton.me>` (the
   XR-Utilities GitHub account). Never a personal email.
 - H-Series contact / correspondence email is `xr-utilities@proton.me` (docs,
-  manifests, public contact fields), distinct from the commit author email.
+  manifests, public contact fields), the same address used for commit authorship.
 - Commits, PRs, and code contain no AI or assistant attribution of any kind: no
   "authored by", "co-authored by", or "generated with" referencing Claude, AI,
   or an assistant, and no such markers in code comments. Authorship is the human
