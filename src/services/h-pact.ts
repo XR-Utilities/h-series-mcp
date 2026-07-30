@@ -14,7 +14,7 @@ import { priceUsd } from "../prices.js";
  *    call them directly; through MCP an agent sees only the public ring metadata.
  *
  * Every write is owner-signed (TIP-712/EIP-712/Ed25519) with the signature in the
- * body. Ring creation additionally settles a $10 x402 micropayment; admit, evict,
+ * body. Ring creation additionally settles a $5 x402 micropayment; admit, evict,
  * policy update, and renew are free.
  */
 export const hPact: ServiceDef = {
@@ -90,7 +90,7 @@ export const hPact: ServiceDef = {
       path: "/rings",
       authMode: "inline_x402",
       bodyFromArgs: true,
-      priceUsd: 10,
+      priceUsd: 5,
     },
     {
       name: "h_pact_admit",
