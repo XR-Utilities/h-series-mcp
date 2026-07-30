@@ -12,10 +12,12 @@ the synced block.
 ### Authorship
 - Commit author identity: `XR-Utilities <xr-utilities@proton.me>` (the
   XR-Utilities org account). Never a personal email.
-- The external and public contact address (outreach, docs CTAs, public contact
-  fields, manifests, websites) is `contact@xr-utilities.com`. The
-  `xr-utilities@proton.me` address is the commit-authorship identity only (above),
-  not the contact address.
+- Public and outreach contact (marketing, docs CTAs, public contact fields,
+  websites, sales outreach) is `contact@xr-utilities.com`. `xr-utilities@proton.me`
+  is retained for two internal uses only: commit authorship (above), and security,
+  abuse, and operator-alert reporting destinations (ops/alert sinks such as
+  `DEFAULT_OPS`). Do not swap a reporting proton address for the contact address, or
+  the contact address into a reporting sink.
 - Commits, PRs, and code contain NO AI or assistant attribution of any kind: no
   "authored by", "co-authored by", or "generated with" referencing Claude, AI, or
   an assistant, and no such markers in code comments. Authorship is the human
