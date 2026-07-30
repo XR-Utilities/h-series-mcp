@@ -12,8 +12,10 @@ the synced block.
 ### Authorship
 - Commit author identity: `XR-Utilities <xr-utilities@proton.me>` (the
   XR-Utilities org account). Never a personal email.
-- The H-Series contact email is `xr-utilities@proton.me` (docs, manifests, public
-  contact fields), the same address used for commit authorship.
+- The external and public contact address (outreach, docs CTAs, public contact
+  fields, manifests, websites) is `contact@xr-utilities.com`. The
+  `xr-utilities@proton.me` address is the commit-authorship identity only (above),
+  not the contact address.
 - Commits, PRs, and code contain NO AI or assistant attribution of any kind: no
   "authored by", "co-authored by", or "generated with" referencing Claude, AI, or
   an assistant, and no such markers in code comments. Authorship is the human
