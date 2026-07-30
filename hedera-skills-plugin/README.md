@@ -12,7 +12,7 @@ and routes to the right product skill; each product skill is the knowledge layer
 use it and its client-side flow), not a restatement of the tool catalog.
 
 - **h-series-suite**: the entry point. Connect the hosted MCP server at
-  `https://mcp.xr-utilities.ai/mcp` for the whole suite (44 tools across 8 products), plus the
+  `https://mcp.xr-utilities.ai/mcp` for the whole suite (45 tools across 8 products), plus the
   map of when to reach for which product and the two cross-cutting client-side flows (TIP-712
   signing for writes, x402 stablecoin payment for paid tools).
 - **h-index-registry**: discover and register agentic services on H-Index (register signing + x402).

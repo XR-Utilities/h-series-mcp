@@ -23,7 +23,7 @@ Claude Code:
 claude mcp add --transport http h-series https://mcp.xr-utilities.ai/mcp
 ```
 
-It exposes 44 tools across 8 products, namespaced by product (`h_index_*`, `h_seal_*`,
+It exposes 45 tools across 8 products, namespaced by product (`h_index_*`, `h_seal_*`,
 `h_grant_*`, `h_relay_*`, `h_gate_*`, `h_cert_*`, `h_pact_*`, `h_scope_*`). Call `tools/list`
 for the current, authoritative catalog and each tool's schema; this skill is the map of
 when to reach for which product, not a substitute for the live tool definitions.
@@ -61,8 +61,9 @@ The MCP tools relay your request; two cross-cutting flows stay client-side:
   revoke, publish a grant, create/admit a ring, publish a heartbeat) carries a signature YOU
   produce over the structured payload. Never raw-sign a bare payload; sign the typed data the
   product's `*_config` tool publishes. The tool relays the signed body; it does not hold your key.
-- **Paid tools need x402.** Tools marked Paid (register $10, renew $5, `h_grant_call`,
-  `h_gate_inspect`, `h_scope_scan`, `h_pact_create_ring`, `h_relay_relay`) require a one-time
+- **Paid tools need x402.** Tools marked Paid (`h_index_register` $10, `h_index_renew` $5,
+  `h_seal_anchor`, `h_grant_call`, `h_relay_send`, `h_relay_relay`, `h_scope_scan`,
+  `h_gate_inspect`, `h_pact_create_ring`) require a one-time
   stablecoin micropayment: USDC (Hedera / Base / Solana / Stellar) or RLUSD (XRPL). You sign a
   transfer authorization the facilitator submits; the service independently re-verifies it on
   chain. Reads and discovery are free.

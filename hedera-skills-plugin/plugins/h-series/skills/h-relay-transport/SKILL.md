@@ -32,6 +32,10 @@ Context proxy:
   request/response hashes (verifiable agent egress).
 - `h_relay_get_relay` (free): a public relay provenance record by id.
 
+Config:
+- `h_relay_config` (free): the mailbox/relay HCS topic ids, the send/relay prices, and the
+  accepted x402 payment rails.
+
 ## Notes
 
 Reads of your own inbox and acks are free but require a TIP-712 authorization you sign, so

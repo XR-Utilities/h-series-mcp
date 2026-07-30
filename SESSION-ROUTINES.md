@@ -42,4 +42,4 @@ interop, docs, workspace hygiene).
 
 Commits, PRs, and code carry no co-authorship or vendor attribution. No em
 dashes, no filler adjectives. Public contact email is `xr-utilities@proton.me`.
-Commit author is `XRPL-Utilities <xrpl-utilities@proton.me>`.
+Commit author is `XR-Utilities <xr-utilities@proton.me>`.
