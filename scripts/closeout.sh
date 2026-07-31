@@ -64,6 +64,16 @@ if [ -f package.json ]; then
   else
     skip "no docs:check script"
   fi
+  # If this server's tool surface changed, its H-Index listing must be re-registered (free owner-update
+  # from the H-Index repo) or it reads as `drift` in discovery. Warn, not fail: this reads the DEPLOYED
+  # surface, so a change this session shows up only after it deploys (the daily H-Index mcp-listing-drift
+  # Action is the hard catch). A lingering drift means a prior tool change was never re-registered.
+  if grep -q '"check:drift"' package.json; then
+    npm run --silent check:drift && pass "H-Index listing matches (no MCP drift)" \
+      || warn "the H-Series MCP listing is drifting; re-register it (see above)"
+  else
+    skip "no check:drift script"
+  fi
 else
   skip "no package.json"
 fi

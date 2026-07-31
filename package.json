@@ -21,6 +21,7 @@
     "typecheck": "tsc --noEmit",
     "coverage": "node scripts/check-tool-coverage.mjs",
     "docs:check": "node scripts/check-docs.mjs",
+    "check:drift": "node scripts/check-listing-drift.mjs",
     "startup": "bash scripts/startup.sh",
     "closeout": "bash scripts/closeout.sh"
   },
