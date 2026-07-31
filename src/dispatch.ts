@@ -22,6 +22,7 @@ import { SERVER_VERSION } from "./version.js";
 import { log, redact } from "./logger.js";
 import { getAuditSink, type AuditBucket, type AuditFields } from "./modules/auditEmit.js";
 import { hashIp, truncateIp } from "./modules/ipHash.js";
+import { postActivity } from "./modules/activityEmit.js";
 
 export interface DispatchOptions {
   /** Override base URLs (useful for tests pointing at localhost). */
@@ -201,6 +202,22 @@ export async function dispatchTool(
       scope: subject ? "tenant" : "operator",
       ...(subject ? { subject } : {}),
       fields: { ...auditBase(), ...extra },
+    });
+    // Option (c): also record every call in the queryable H-Index agent-activity trace (the
+    // "what did this agent call" record), kept OFF the on-chain SIEM topic. Fire-and-forget,
+    // env-gated; the IP is already hashed by auditBase(). status collapses to ok|error.
+    const base = auditBase();
+    const latency = typeof extra["latencyMs"] === "number" ? (extra["latencyMs"] as number) : undefined;
+    postActivity({
+      product: "h-series-mcp",
+      kind: "tool_call",
+      tool: toolName,
+      route: tool.path,
+      status: evt.endsWith("_failed") ? "error" : "ok",
+      ...(latency !== undefined ? { latencyMs: latency } : {}),
+      ...(base.ipHash !== "none" ? { ipHash: String(base.ipHash) } : {}),
+      ...(base.ipPrefix !== "none" ? { ipPrefix: String(base.ipPrefix) } : {}),
+      ...(subject ? { subject } : {}),
     });
   };
   // Raw-IP op-log line (stderr only, redacted logger). This is the sole place the raw
