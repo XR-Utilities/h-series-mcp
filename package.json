@@ -23,7 +23,7 @@
     "docs:check": "node scripts/check-docs.mjs",
     "check:drift": "node scripts/check-listing-drift.mjs",
     "startup": "bash scripts/startup.sh",
-    "closeout": "bash scripts/closeout.sh"
+    "closeout": "echo Run the estate closeout from H-Index: npm run closeout:estate && exit 1"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",
