@@ -27,9 +27,7 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",
-    "express": "^4.21.0"
-  },
-  "optionalDependencies": {
+    "express": "^4.21.0",
     "@hiero-ledger/sdk": "^2.85.0"
   },
   "devDependencies": {
