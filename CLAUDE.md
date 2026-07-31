@@ -168,3 +168,28 @@ each member. Never answer scope from memory, recent context, or the local worksp
 - struct fields / variants -> the code or Zod schema
 If a member cannot be verified, say so explicitly rather than omitting it. This
 operationalizes the "no guessing" principle.
+
+## Audit observability (per tool call)
+`src/dispatch.ts` emits ONE SIEM audit event per resolved tool call to the SHARED estate
+audit topic, so the H-Index hub serves a per-agent trace of MCP front-door traffic. The
+emitter is `src/modules/auditEmit.ts`, a verbatim sibling of H-Gate/H-Index
+(`AUDIT_EVENT_KIND = "h-series.audit-event"`, byte-identical canonical hash + payload
+shape so the hub verifies it). Events:
+- `mcp.tool_call` (bucket `activity`) on a resolved call, including the expected 402 challenge.
+- `mcp.tool_call_failed` (bucket `service_failure`) on a 5xx or a network/timeout error.
+- `mcp.tool_call_failed` (bucket `malicious_suspicious`) on a non-402 4xx.
+Fields are public-safe scalars only: `tool, service, route, status, latencyMs, ipHash, ipPrefix`.
+- Fail-safe OFF: anchoring activates only when `AUDIT_OPERATOR_ID` + `AUDIT_OPERATOR_KEY` +
+  `HCS_AUDIT_TOPIC_ID` are all set. Unset = log-only, and the Hedera SDK (`@hiero-ledger/sdk`,
+  an `optionalDependency`) is loaded LAZILY on the first anchoring emit, so the zero-dep
+  passthrough boots and runs unchanged with audit OFF.
+- Caller-IP PRIVACY (`src/modules/ipHash.ts`): the raw client IP (`req.ip`, wired through
+  `DispatchOptions.callerIp` from `transport/http.ts`) NEVER goes on the public audit topic.
+  The event carries a salted keyed HMAC (`ipHash`) + a `/24`-or-`/48` prefix (`ipPrefix`).
+  The raw IP appears ONLY in the stderr op-log (`logger.ts`). `AUDIT_IP_HASH_SALT` keys the
+  HMAC for cross-restart correlation; unset uses a per-process random key.
+- Caller identity is UNVERIFIED: this passthrough has no authenticated principal. A
+  CAIP-10-shaped owner/account body arg is surfaced as a best-effort `subject` (scope `tenant`),
+  a self-asserted claim only, never proof, and it gates nothing. Otherwise the event is
+  operator-scoped.
+- Emission is fire-and-forget and swallowed: an audit failure never blocks or fails a tool call.

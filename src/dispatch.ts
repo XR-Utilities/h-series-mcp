@@ -20,6 +20,8 @@
 import { findToolOwner } from "./services/index.js";
 import { SERVER_VERSION } from "./version.js";
 import { log, redact } from "./logger.js";
+import { getAuditSink, type AuditBucket, type AuditFields } from "./modules/auditEmit.js";
+import { hashIp, truncateIp } from "./modules/ipHash.js";
 
 export interface DispatchOptions {
   /** Override base URLs (useful for tests pointing at localhost). */
@@ -29,6 +31,41 @@ export interface DispatchOptions {
    * can distinguish MCP traffic from direct API users.
    */
   userAgent?: string;
+  /**
+   * Raw caller IP (req.ip on the HTTP transport; undefined on stdio, which is
+   * single-tenant local). Used ONLY to derive the privacy-safe ipHash/ipPrefix
+   * fields on the audit event and the raw op-log line. It is NEVER placed on the
+   * public audit topic in raw form; see src/modules/ipHash.ts.
+   */
+  callerIp?: string;
+  /**
+   * Override the audit sink (tests). Defaults to the process-wide sink built from
+   * the environment. The default is log-only until the audit vars are set.
+   */
+  auditSink?: { emit(e: {
+    evt: string;
+    bucket: AuditBucket;
+    severity: "page" | "alert" | "review";
+    fields?: AuditFields;
+    scope?: "operator" | "tenant";
+    subject?: string;
+  }): Promise<void> };
+}
+
+// Best-effort caller identity for the audit `subject`. There is NO authenticated
+// principal on this passthrough (only IP + whatever the caller put in the body), so this
+// is an UNVERIFIED, self-asserted CAIP-10-shaped hint pulled from conventional owner/account
+// arg names. It must be treated as a claim, never as proof of identity, and it never gates
+// anything. A CAIP-10 id has the form chain:network:reference; we only surface a value that
+// looks like one so the subject slice stays a coarse, self-labelled bucket.
+const SUBJECT_ARG_NAMES = ["owner", "ownerAccountId", "account", "accountId", "caller", "subject"];
+const CAIP10_SHAPE = /^[a-z0-9]+:[a-zA-Z0-9._-]+:[a-zA-Z0-9._-]+$/;
+function bestEffortSubject(args: Record<string, unknown>): string | undefined {
+  for (const name of SUBJECT_ARG_NAMES) {
+    const v = args[name];
+    if (typeof v === "string" && CAIP10_SHAPE.test(v)) return v;
+  }
+  return undefined;
 }
 
 /**
@@ -137,17 +174,59 @@ export async function dispatchTool(
     }
   }
 
+  // Audit context. The sink is the process-wide one unless a test injects its own.
+  // A tenant scope is used only when a self-asserted (unverified) subject is present;
+  // otherwise the event is operator-scoped infra activity.
+  const sink = opts.auditSink ?? getAuditSink();
+  const subject = bestEffortSubject(args);
+  // Privacy: the raw IP is hashed/truncated for the public plane here and NEVER emitted
+  // raw. The raw IP appears only in the stderr op-log line below (local operator surface).
+  const auditBase = (): AuditFields => ({
+    tool: toolName,
+    service: service.id,
+    route: tool.path,
+    ipHash: opts.callerIp ? hashIp(opts.callerIp) : "none",
+    ipPrefix: opts.callerIp ? truncateIp(opts.callerIp) : "none",
+  });
+  const emit = (
+    evt: string,
+    bucket: AuditBucket,
+    extra: AuditFields,
+  ): void => {
+    // Fire-and-forget: an audit emission must never block or fail the tool call.
+    void sink.emit({
+      evt,
+      bucket,
+      severity: "review",
+      scope: subject ? "tenant" : "operator",
+      ...(subject ? { subject } : {}),
+      fields: { ...auditBase(), ...extra },
+    });
+  };
+  // Raw-IP op-log line (stderr only, redacted logger). This is the sole place the raw
+  // caller IP is recorded; it must not reach the audit sink in raw form.
+  if (opts.callerIp) {
+    log.debug("tool call", { tool: toolName, service: service.id, ip: opts.callerIp });
+  }
+
   // Run the request. The MCP SDK gives us 30+ seconds of headroom on
   // most clients; we cap at 60s here so an upstream stall surfaces as
   // a timeout error instead of hanging the MCP session forever.
+  const startedAt = Date.now();
   const ctl = new AbortController();
   const timeoutId = setTimeout(() => ctl.abort(), 60_000);
   let res: Response;
   try {
     res = await fetch(url, { method: tool.method, headers, body, signal: ctl.signal });
+  } catch (err) {
+    // Network error / timeout: the upstream did not answer. Record it as a service
+    // failure before rethrowing so the trace is not lost on the error path.
+    emit("mcp.tool_call_failed", "service_failure", { latencyMs: Date.now() - startedAt, status: 0 });
+    throw err;
   } finally {
     clearTimeout(timeoutId);
   }
+  const latencyMs = Date.now() - startedAt;
 
   const text = await res.text();
   let parsed: unknown;
@@ -175,9 +254,14 @@ export async function dispatchTool(
   if (!res.ok) {
     if (res.status >= 500) {
       log.warn("upstream 5xx", { tool: toolName, service: service.id, status: res.status, body: redact(parsed) });
+      // Upstream error: a 5xx is a service failure of the backend, not caller intent.
+      emit("mcp.tool_call_failed", "service_failure", { latencyMs, status: res.status });
       throw new Error(`upstream ${res.status}`);
     }
     if (res.status === 402) {
+      // 402 is the expected payment challenge, not a failure: record it as activity so
+      // the trace shows the caller reached a paid tool without a valid envelope.
+      emit("mcp.tool_call", "activity", { latencyMs, status: 402 });
       return {
         _error: true,
         status: 402,
@@ -186,12 +270,17 @@ export async function dispatchTool(
       };
     }
     log.warn("upstream 4xx", { tool: toolName, service: service.id, status: res.status, body: redact(parsed) });
+    // A non-402 4xx is a rejected request: a bad/forbidden/not-found call. Treat it as
+    // suspicious-activity signal (401/403/404/409/422...) so abuse patterns surface.
+    emit("mcp.tool_call_failed", "malicious_suspicious", { latencyMs, status: res.status });
     return {
       _error: true,
       status: res.status,
       response: relayable4xx(parsed),
     };
   }
+  // Success: one activity trace per resolved tool call.
+  emit("mcp.tool_call", "activity", { latencyMs, status: res.status });
   return parsed;
 }
 

@@ -277,3 +277,120 @@ test("an invalid payment_signature surfaces before any request fires", async () 
     globalThis.fetch = realFetch;
   }
 });
+
+// ---- audit observability + IP privacy ----
+
+import { hashIp, truncateIp } from "./modules/ipHash.js";
+
+interface CapturedEvent {
+  evt: string;
+  bucket: string;
+  severity: string;
+  fields?: Record<string, unknown>;
+  scope?: string;
+  subject?: string;
+}
+function captureSink(): { sink: { emit(e: CapturedEvent): Promise<void> }; events: CapturedEvent[] } {
+  const events: CapturedEvent[] = [];
+  return {
+    events,
+    sink: {
+      async emit(e: CapturedEvent): Promise<void> {
+        events.push(e);
+      },
+    },
+  };
+}
+
+test("a successful call emits mcp.tool_call (activity) with a privacy-safe ip", async () => {
+  const restore = stubFetch(200, { categories: [] });
+  const { sink, events } = captureSink();
+  try {
+    await dispatchTool("h_index_categories", {}, { auditSink: sink, callerIp: "203.0.113.7" });
+    assert.equal(events.length, 1);
+    const e = events[0]!;
+    assert.equal(e.evt, "mcp.tool_call");
+    assert.equal(e.bucket, "activity");
+    assert.equal(e.scope, "operator");
+    assert.equal(e.fields?.status, 200);
+    assert.equal(e.fields?.tool, "h_index_categories");
+    assert.equal(typeof e.fields?.latencyMs, "number");
+    // The raw IP must NEVER appear on the event.
+    const blob = JSON.stringify(e);
+    assert.ok(!blob.includes("203.0.113.7"), "raw IP leaked into the audit event");
+    assert.equal(e.fields?.ipHash, hashIp("203.0.113.7"));
+    assert.equal(e.fields?.ipPrefix, "203.0.113.0/24");
+  } finally {
+    restore();
+  }
+});
+
+test("a self-asserted CAIP-10 owner arg scopes the event to tenant", async () => {
+  const restore = stubFetch(200, { ok: true });
+  const { sink, events } = captureSink();
+  try {
+    await dispatchTool(
+      "h_index_search",
+      { q: "x", owner: "hedera:mainnet:0.0.123" },
+      { auditSink: sink },
+    );
+    const e = events[0]!;
+    assert.equal(e.scope, "tenant");
+    assert.equal(e.subject, "hedera:mainnet:0.0.123");
+  } finally {
+    restore();
+  }
+});
+
+test("a non-402 4xx emits mcp.tool_call_failed (malicious_suspicious)", async () => {
+  const restore = stubFetch(404, { error: "not found" });
+  const { sink, events } = captureSink();
+  try {
+    await dispatchTool("h_index_get_listing", { id: "0.0.1/2" }, { auditSink: sink });
+    const e = events[0]!;
+    assert.equal(e.evt, "mcp.tool_call_failed");
+    assert.equal(e.bucket, "malicious_suspicious");
+    assert.equal(e.fields?.status, 404);
+  } finally {
+    restore();
+  }
+});
+
+test("a 402 challenge emits mcp.tool_call (activity, status 402)", async () => {
+  const restore = stubFetch(402, { accepts: [] });
+  const { sink, events } = captureSink();
+  try {
+    await dispatchTool("h_index_register", { endpointUrl: "https://x.example" }, { auditSink: sink });
+    const e = events[0]!;
+    assert.equal(e.evt, "mcp.tool_call");
+    assert.equal(e.bucket, "activity");
+    assert.equal(e.fields?.status, 402);
+  } finally {
+    restore();
+  }
+});
+
+test("an upstream 5xx emits mcp.tool_call_failed (service_failure) then throws", async () => {
+  const restore = stubFetch(500, { error: "boom" });
+  const { sink, events } = captureSink();
+  try {
+    await assert.rejects(() =>
+      dispatchTool("h_index_categories", {}, { auditSink: sink }),
+    );
+    const e = events[0]!;
+    assert.equal(e.evt, "mcp.tool_call_failed");
+    assert.equal(e.bucket, "service_failure");
+    assert.equal(e.fields?.status, 500);
+  } finally {
+    restore();
+  }
+});
+
+test("ipHash is one-way and never equals the raw IP; truncateIp is a /24", () => {
+  assert.notEqual(hashIp("198.51.100.42"), "198.51.100.42");
+  assert.match(hashIp("198.51.100.42"), /^[0-9a-f]{16}$/);
+  assert.equal(truncateIp("198.51.100.42"), "198.51.100.0/24");
+  assert.equal(truncateIp("::ffff:198.51.100.42"), "198.51.100.0/24");
+  assert.equal(truncateIp("2001:db8:1234:5678::1"), "2001:db8:1234::/48");
+  assert.equal(truncateIp(""), "unknown");
+});

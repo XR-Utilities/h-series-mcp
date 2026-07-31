@@ -29,6 +29,32 @@ payment envelope as `payment_signature`, which the dispatcher forwards as the
 paid tool is called without payment, the request is still forwarded so the
 caller receives the real 402 challenge from the backend.
 
+## Audit observability
+
+Every tool call is traced to the shared estate SIEM audit stream, so the H-Index
+hub can serve a per-agent view of what transited the MCP front door. On each resolved
+call the dispatcher emits one operator-signed `mcp.tool_call` (bucket `activity`)
+event; a backend 5xx or a network failure emits `mcp.tool_call_failed`
+(`service_failure`) and a non-402 4xx emits `mcp.tool_call_failed`
+(`malicious_suspicious`). Each event carries public-safe scalar fields only: `tool`,
+`service`, `route`, `status`, `latencyMs`, and a caller-IP fingerprint.
+
+Caller-IP privacy: the raw client IP is NEVER placed on the public audit topic. The
+event carries a salted, keyed one-way hash (`ipHash`) and a coarse `/24` / `/48` prefix
+(`ipPrefix`); the raw IP appears only in the local stderr op-log. Set
+`AUDIT_IP_HASH_SALT` for stable cross-restart correlation of repeat callers.
+
+Anchoring is fail-safe OFF: it activates only when `AUDIT_OPERATOR_ID`,
+`AUDIT_OPERATOR_KEY`, and `HCS_AUDIT_TOPIC_ID` are all set. When unset the sink is
+log-only, nothing anchors, and the Hedera SDK (an `optionalDependency`, loaded lazily
+only on the anchoring path) is never imported, so the passthrough runs unchanged. See
+`.env.example` for the full var set.
+
+There is no authenticated principal on this passthrough. When a call carries a
+conventional owner/account arg that looks like a CAIP-10 id, that value is surfaced as a
+best-effort, UNVERIFIED `subject` and the event is scoped `tenant`; it is a self-asserted
+claim, never proof of identity, and gates nothing.
+
 ## Run
 
 Build first, then start a transport.

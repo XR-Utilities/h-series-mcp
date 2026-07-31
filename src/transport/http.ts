@@ -205,6 +205,10 @@ export async function runHttp(port: number): Promise<void> {
     try {
       const mcpServer = buildServer({
         userAgent: `h-series-mcp/${SERVER_VERSION} (http)`,
+        // Pass the real client IP (populated from XFF via `trust proxy` above) so the
+        // dispatcher can emit a privacy-safe ipHash/ipPrefix on the audit trace. The raw
+        // value never leaves the process onto the public audit topic (see ipHash.ts).
+        callerIp: req.ip ?? req.socket.remoteAddress ?? undefined,
       });
       transport = new StreamableHTTPServerTransport({
         sessionIdGenerator: undefined, // stateless
