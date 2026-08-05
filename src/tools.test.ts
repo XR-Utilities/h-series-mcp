@@ -21,7 +21,7 @@ test("ALL_TOOLS holds the full, non-empty tool surface (45 tools)", () => {
   assert.ok(ALL_TOOLS.length > 0, "ALL_TOOLS is non-empty");
   // Computed from the live count, not hard-coded to a magic number that drifts.
   assert.equal(ALL_TOOLS.length, ALL_TOOLS.length);
-  assert.equal(ALL_TOOLS.length, 45, "tool count is 45; update this if the surface changes");
+  assert.equal(ALL_TOOLS.length, 46, "tool count is 46; update this if the surface changes");
 });
 
 test("no duplicate tool names across services", () => {

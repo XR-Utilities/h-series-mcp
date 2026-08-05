@@ -29,6 +29,25 @@ function stubFetch(status: number, body: unknown): () => void {
   };
 }
 
+test("h_index_resolve maps to GET /endpoints/resolve with uaid as a query param", async () => {
+  let capturedUrl = "";
+  const saved = globalThis.fetch;
+  globalThis.fetch = (async (url: string) => {
+    capturedUrl = String(url);
+    return new Response(JSON.stringify({ uaid: "u", resolved: { id: "0.0.1/2" } }), {
+      status: 200,
+      headers: { "content-type": "application/json" },
+    });
+  }) as typeof fetch;
+  try {
+    await dispatchTool("h_index_resolve", { uaid: "uaid:aid:abc;proto=mcp;nativeId=hedera:mainnet:0.0.1" });
+    assert.match(capturedUrl, /\/endpoints\/resolve\?/, "hits the resolve route");
+    assert.match(capturedUrl, /uaid=uaid%3Aaid%3Aabc/, "uaid is url-encoded query param, not a path segment");
+  } finally {
+    globalThis.fetch = saved;
+  }
+});
+
 test("payment_signature: a clean base64 envelope is accepted", () => {
   assert.doesNotThrow(() => assertValidPaymentSignature("YWJjMTIzKy89"));
   assert.doesNotThrow(() => assertValidPaymentSignature("AbC-_d9="));

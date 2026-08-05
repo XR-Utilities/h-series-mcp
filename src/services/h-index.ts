@@ -95,6 +95,30 @@ export const hIndex: ServiceDef = {
       authMode: "free",
     },
     {
+      name: "h_index_resolve",
+      description:
+        "Free. Resolve a Hashgraph Online (HOL) HCS-14 Universal Agent ID (UAID) back to its " +
+        "H-Index listing, with full trust evidence: the trust tier, safety flags, receipt-anchoring " +
+        "verdict, and identity block. Use this when you discover an agent through the HOL directory " +
+        "and want the estate's policy/evidence view of it. Takes an owner-scoped UAID (one whose " +
+        "nativeId is a CAIP-10 identity, form uaid:aid:<hash>;...;nativeId=<caip-10>); a host-scoped " +
+        "UAID resolves via h_index_get_listing on the listing instead.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          uaid: {
+            type: "string",
+            description: "The HCS-14 UAID to resolve, e.g. uaid:aid:<hash>;uid=0;registry=h-index;proto=mcp;nativeId=<caip-10>.",
+          },
+        },
+        required: ["uaid"],
+        additionalProperties: false,
+      },
+      method: "GET",
+      path: "/endpoints/resolve",
+      authMode: "free",
+    },
+    {
       name: "h_index_categories",
       description:
         "Free. List the registry categories (id + label) available for filtering discovery, " +
