@@ -152,6 +152,21 @@ export async function dispatchTool(
       headers[headerName] = typeof v === "string" ? v : JSON.stringify(v);
     }
   }
+
+  // Inject any declared service-to-service secret header from the ENVIRONMENT
+  // (never from caller args). The secret gates the H-Agent research surface: the
+  // passthrough presents this bearer AFTER the x402 leg above so the backend runs
+  // the paid work. Read at call time so an operator can rotate the secret without
+  // a rebuild. A tool declaring this is only registered when the env var is set,
+  // so an empty value here is a defensive skip, not the normal path. The value is
+  // set as a header only; it is never placed in a body, a query, a log line, or an
+  // audit field.
+  for (const [headerName, spec] of Object.entries(tool.secretHeaderEnv ?? {})) {
+    const secret = process.env[spec.env];
+    if (secret) {
+      headers[headerName] = `${spec.prefix ?? ""}${secret}`;
+    }
+  }
   // No auth supplied for an inline_x402 tool? Fire the request anyway
   // so the caller gets the real 402 challenge back from the underlying
   // service. The MCP server is a transparent proxy, not an enforcer.

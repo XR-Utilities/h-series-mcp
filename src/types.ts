@@ -83,6 +83,19 @@ export interface ToolDef {
    * Off by default (path args are consumed and stripped from the payload).
    */
   keepPathParamsInBody?: boolean;
+  /**
+   * Map a request header name to a service-to-service secret held in the process
+   * ENVIRONMENT. The dispatcher reads the env var at call time and sends the
+   * header as `<prefix><envValue>` (e.g. Authorization -> "Bearer <secret>").
+   * Distinct from headerArgs (which pulls a caller-supplied arg): this value is
+   * NEVER caller-supplied, NEVER appears in inputSchema, and is NEVER logged, so a
+   * client cannot spoof or read it. Used for the H-Agent research surface, whose
+   * routes gate on a shared bearer the passthrough presents AFTER collecting the
+   * x402 micropayment (collect-before-spend). A tool declaring this is registered
+   * only when its env var is set (see the service def), so the surface is
+   * fail-closed: unset secret -> the tools are not advertised or callable.
+   */
+  secretHeaderEnv?: Record<string, { env: string; prefix?: string }>;
 }
 
 export interface ServiceDef {

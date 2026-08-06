@@ -5,7 +5,7 @@ import {
   ListToolsRequestSchema,
   ReadResourceRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
-import { ALL_TOOLS, SERVICES, findToolOwner } from "./services/index.js";
+import { listEnabledTools, SERVICES, findToolOwner } from "./services/index.js";
 import { dispatchTool, type DispatchOptions } from "./dispatch.js";
 import { validateArgs } from "./argcheck.js";
 import { SERVER_VERSION } from "./version.js";
@@ -19,7 +19,9 @@ export function buildServer(opts: DispatchOptions = {}): Server {
   );
 
   server.setRequestHandler(ListToolsRequestSchema, async () => ({
-    tools: ALL_TOOLS.map((t) => {
+    // Only advertise tools whose gate is open (a secret-gated tool with its secret
+    // unset is hidden), so the research surface appears only when it is purchasable.
+    tools: listEnabledTools().map((t) => {
       // Discriminated union so both branches are shape-checked: free tools
       // carry no settlement field, paid tools always do.
       type Pricing =

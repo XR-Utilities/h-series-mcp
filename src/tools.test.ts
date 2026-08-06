@@ -1,27 +1,39 @@
 /**
- * Data-driven coverage of the full MCP tool surface. The dispatcher fronts 8
+ * Data-driven coverage of the full MCP tool surface. The dispatcher fronts 9
  * backends as a fixed set of ToolDefs; a single drifted field (a malformed
  * name, a non-object input schema, a path placeholder with no matching arg, a
  * duplicate name, a tool with no owner) is a routing or contract bug. This test
  * asserts the invariant for EVERY tool in ALL_TOOLS, so the whole surface is
  * guarded by construction rather than per-tool.
+ *
+ * The secret-gated research tools resolve via findToolOwner only when their secret
+ * is present, so set it here: this file checks tool DEFINITION correctness across
+ * the full static surface; the runtime gate itself is covered by research.test.ts.
  */
+
+process.env["RESEARCH_SERVICE_SECRET"] = "s";
 
 import test from "node:test";
 import assert from "node:assert/strict";
 import { ALL_TOOLS, findToolOwner } from "./services/index.js";
 
-const NAME_RE = /^h_[a-z]+_[a-z_]+$/;
+// h_<service>_<verb> is the convention; the product-branded research surface uses a
+// two-part h_research[_<verb>] form (the product is "research", not a service slug),
+// so the trailing segment is optional.
+const NAME_RE = /^h_[a-z]+(_[a-z_]+)?$/;
 const METHODS = new Set(["GET", "POST", "PUT", "DELETE", "PATCH"]);
 // Path placeholders: {param} or {param*} (the trailing * preserves slashes).
 const PLACEHOLDER_RE = /\{([a-zA-Z0-9_]+)\*?\}/g;
 
-test("ALL_TOOLS holds the full, non-empty tool surface (45 tools)", () => {
+test("ALL_TOOLS holds the full, non-empty tool surface (50 tools)", () => {
   assert.ok(Array.isArray(ALL_TOOLS), "ALL_TOOLS is an array");
   assert.ok(ALL_TOOLS.length > 0, "ALL_TOOLS is non-empty");
   // Computed from the live count, not hard-coded to a magic number that drifts.
   assert.equal(ALL_TOOLS.length, ALL_TOOLS.length);
-  assert.equal(ALL_TOOLS.length, 46, "tool count is 46; update this if the surface changes");
+  // ALL_TOOLS is the full STATIC surface (gate open or shut). The four H-Agent
+  // research tools are included here even though they are only ADVERTISED when
+  // RESEARCH_SERVICE_SECRET is set (see listEnabledTools / isToolEnabled).
+  assert.equal(ALL_TOOLS.length, 50, "tool count is 50; update this if the surface changes");
 });
 
 test("no duplicate tool names across services", () => {

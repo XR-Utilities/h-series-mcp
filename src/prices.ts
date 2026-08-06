@@ -28,7 +28,11 @@ export type PriceKey =
   | "h_relay_relay"
   | "h_scope_scan"
   | "h_gate_inspect"
-  | "h_pact_create_ring";
+  | "h_pact_create_ring"
+  | "h_research"
+  | "h_research_blogify"
+  | "h_research_report"
+  | "h_research_calendar";
 
 interface PriceSpec {
   /** ServiceDef.id, used to resolve the live /config URL (honoring env overrides). */
@@ -50,6 +54,15 @@ const SPECS: Record<PriceKey, PriceSpec> = {
   h_scope_scan: { serviceId: "h-scope", field: "pricing.scanPriceUsdCents", fallbackCents: 10 },
   h_gate_inspect: { serviceId: "h-gate", field: "inspectPriceUsdCents", fallbackCents: 10 },
   h_pact_create_ring: { serviceId: "h-pact", field: "pricing.ringCreatePriceUsdCents", fallbackCents: 500 },
+  // The research surface's x402 leg is COLLECTED AT THE PASSTHROUGH (H-Agent's
+  // /research/* routes gate on a bearer, not x402), so the passthrough is the
+  // price authority here. H-Agent's /config does not publish these fields today,
+  // so the field path is a forward-looking hook (pricing.research.*) and these
+  // stay at the fallback until H-Agent chooses to advertise a live override.
+  h_research: { serviceId: "h-agent", field: "pricing.research.answerUsdCents", fallbackCents: 5 },
+  h_research_blogify: { serviceId: "h-agent", field: "pricing.research.blogifyUsdCents", fallbackCents: 50 },
+  h_research_report: { serviceId: "h-agent", field: "pricing.research.reportUsdCents", fallbackCents: 200 },
+  h_research_calendar: { serviceId: "h-agent", field: "pricing.research.calendarUsdCents", fallbackCents: 5 },
 };
 
 const FETCH_TIMEOUT_MS = 4_000;

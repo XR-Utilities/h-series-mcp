@@ -47,7 +47,11 @@
       "h_cert_standing": "src/tools.test.ts (contract) + src/dispatch.test.ts (CAIP-10 single-segment encoding)",
       "h_cert_resolve": "src/tools.test.ts (contract) + src/dispatch.test.ts (POST body shape)",
       "h_cert_principals": "src/tools.test.ts (contract)",
-      "h_cert_config": "src/tools.test.ts (contract)"
+      "h_cert_config": "src/tools.test.ts (contract)",
+      "h_research": "src/research.test.ts (price + fail-closed gate) + src/research-dispatch.test.ts (proxy to /research/answer, bearer inject, receipt relay, x-payment forward, 402)",
+      "h_research_blogify": "src/research.test.ts (price 50c + gate + answer required) + src/research-dispatch.test.ts (proxy to /research/blogify)",
+      "h_research_report": "src/research.test.ts (price 200c + gate + answer required) + src/research-dispatch.test.ts (proxy to /research/report)",
+      "h_research_calendar": "src/research.test.ts (price 5c + gate + answer required) + src/research-dispatch.test.ts (proxy to /research/calendar)"
     },
     "waived": {}
   },

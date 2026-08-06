@@ -12,6 +12,7 @@ forwards calls to the live HTTPS services:
 - H-Pact: membership-ring registry (create, admit, config)
 - H-Gate: agentic data-egress control (inspect text, config)
 - H-Cert: standing and owner-delegation layer (resolve, standing, principals, config)
+- H-Agent: metered research surface (answer, blogify, report, calendar)
 
 ## What it is
 
@@ -28,6 +29,28 @@ payment envelope as `payment_signature`, which the dispatcher forwards as the
 `x-payment` header. Tools marked free never carry a payment header. When a
 paid tool is called without payment, the request is still forwarded so the
 caller receives the real 402 challenge from the backend.
+
+### Metered research surface (H-Agent)
+
+The four `h_research*` tools expose the machine research product. Each collects an
+x402 micropayment at the passthrough (like every other paid tool) and proxies to
+H-Agent's `/research/*` routes, which do live retrieval + synthesis and bundle a
+FREE H-Seal proof-of-execution receipt:
+
+- `h_research` ($0.05) -> `POST /research/answer`: a source-cited answer plus consumer
+  safety disclaimers. Pass `question` (required), optional `content`/`constraints`/`asOf`.
+- `h_research_blogify` ($0.50) -> `POST /research/blogify`: a publish-ready blog post
+  (Markdown) from a prior answer. Pass `question` + `answer`.
+- `h_research_report` ($2.00) -> `POST /research/report`: a decision-ready report
+  (Markdown) from a prior answer. Pass `question` + `answer`.
+- `h_research_calendar` ($0.05) -> `POST /research/calendar`: datable events extracted
+  from a prior answer. Pass `question` + `answer`.
+
+H-Agent's `/research/*` routes gate on a shared service secret, presented by the
+passthrough as an `Authorization` bearer AFTER the pay leg (collect-before-spend). The
+secret is env-only (`RESEARCH_SERVICE_SECRET`), never a caller argument, and never
+logged. FAIL-CLOSED: with `RESEARCH_SERVICE_SECRET` unset the four tools are not
+advertised or callable, matching H-Agent, which returns 503 `research_disabled`.
 
 ## Audit observability
 

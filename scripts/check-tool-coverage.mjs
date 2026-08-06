@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Tool + route coverage gate. The real surface of this MCP server is two things:
- * the 44 passthrough tool definitions (src/services/*.ts) and the handful of
+ * the passthrough tool definitions (src/services/*.ts) and the handful of
  * Express HTTP routes (src/transport/http.ts). Tool routing has drifted before
  * (a tool pointed at the wrong backend path), so the tools are the high-value
  * surface. This gate enumerates both surfaces from source and fails if any tool
