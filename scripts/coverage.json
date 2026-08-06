@@ -4,6 +4,7 @@
     "covered": {
       "h_index_search": "src/tools.test.ts (contract) + src/dispatch.test.ts (trust-tier query passthrough)",
       "h_index_get_listing": "src/tools.test.ts (contract) + src/dispatch.test.ts (two-segment route, traversal guard, 4xx/5xx relay)",
+      "h_index_resolve": "src/tools.test.ts (contract) + src/dispatch.test.ts (uaid -> GET /endpoints/resolve query-param mapping)",
       "h_index_categories": "src/tools.test.ts (contract)",
       "h_index_register": "src/tools.test.ts (contract) + src/dispatch.test.ts (402 challenge passthrough)",
       "h_index_renew": "src/tools.test.ts (contract)",
