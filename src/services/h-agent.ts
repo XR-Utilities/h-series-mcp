@@ -115,7 +115,7 @@ const RESEARCH_TOOLS: ToolDef[] = [
     path: "/research/blogify",
     authMode: "inline_x402",
     bodyFromArgs: true,
-    priceUsd: 0.5,
+    priceUsd: 2.0,
     secretHeaderEnv: RESEARCH_AUTH,
   },
   {
@@ -143,7 +143,7 @@ const RESEARCH_TOOLS: ToolDef[] = [
     path: "/research/report",
     authMode: "inline_x402",
     bodyFromArgs: true,
-    priceUsd: 2.0,
+    priceUsd: 4.0,
     secretHeaderEnv: RESEARCH_AUTH,
   },
   {

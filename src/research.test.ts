@@ -24,11 +24,11 @@ import { priceCents, priceUsd, resetPricesForTest } from "./prices.js";
 import { validateArgs } from "./argcheck.js";
 
 // The four tools + their contracted prices (USD cents). This is the FINANCIAL
-// contract: h_research 5c, blogify 50c, report 200c, calendar 5c.
+// contract: h_research 5c, blogify 200c (full post), report 400c (deep), calendar 5c.
 const EXPECTED = [
   { name: "h_research", cents: 5, path: "/research/answer" },
-  { name: "h_research_blogify", cents: 50, path: "/research/blogify" },
-  { name: "h_research_report", cents: 200, path: "/research/report" },
+  { name: "h_research_blogify", cents: 200, path: "/research/blogify" },
+  { name: "h_research_report", cents: 400, path: "/research/report" },
   { name: "h_research_calendar", cents: 5, path: "/research/calendar" },
 ] as const;
 
@@ -90,8 +90,8 @@ test("prices: each research tool carries its contracted USD price", () => {
     assert.equal(priceCents(spec.name as never), spec.cents, `${spec.name} fallback cents`);
   }
   assert.equal(priceUsd("h_research"), "0.05");
-  assert.equal(priceUsd("h_research_blogify"), "0.50");
-  assert.equal(priceUsd("h_research_report"), "2.00");
+  assert.equal(priceUsd("h_research_blogify"), "2.00");
+  assert.equal(priceUsd("h_research_report"), "4.00");
   assert.equal(priceUsd("h_research_calendar"), "0.05");
 });
 

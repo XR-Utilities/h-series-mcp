@@ -60,8 +60,8 @@ const SPECS: Record<PriceKey, PriceSpec> = {
   // so the field path is a forward-looking hook (pricing.research.*) and these
   // stay at the fallback until H-Agent chooses to advertise a live override.
   h_research: { serviceId: "h-agent", field: "pricing.research.answerUsdCents", fallbackCents: 5 },
-  h_research_blogify: { serviceId: "h-agent", field: "pricing.research.blogifyUsdCents", fallbackCents: 50 },
-  h_research_report: { serviceId: "h-agent", field: "pricing.research.reportUsdCents", fallbackCents: 200 },
+  h_research_blogify: { serviceId: "h-agent", field: "pricing.research.blogifyUsdCents", fallbackCents: 200 },
+  h_research_report: { serviceId: "h-agent", field: "pricing.research.reportUsdCents", fallbackCents: 400 },
   h_research_calendar: { serviceId: "h-agent", field: "pricing.research.calendarUsdCents", fallbackCents: 5 },
 };
 
