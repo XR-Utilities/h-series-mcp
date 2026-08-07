@@ -32,7 +32,8 @@ export type PriceKey =
   | "h_research"
   | "h_research_blogify"
   | "h_research_report"
-  | "h_research_calendar";
+  | "h_research_calendar"
+  | "h_research_review";
 
 interface PriceSpec {
   /** ServiceDef.id, used to resolve the live /config URL (honoring env overrides). */
@@ -63,6 +64,7 @@ const SPECS: Record<PriceKey, PriceSpec> = {
   h_research_blogify: { serviceId: "h-agent", field: "pricing.research.blogifyUsdCents", fallbackCents: 200 },
   h_research_report: { serviceId: "h-agent", field: "pricing.research.reportUsdCents", fallbackCents: 400 },
   h_research_calendar: { serviceId: "h-agent", field: "pricing.research.calendarUsdCents", fallbackCents: 5 },
+  h_research_review: { serviceId: "h-agent", field: "pricing.research.reviewUsdCents", fallbackCents: 10 },
 };
 
 const FETCH_TIMEOUT_MS = 4_000;

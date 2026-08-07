@@ -174,6 +174,39 @@ const RESEARCH_TOOLS: ToolDef[] = [
     priceUsd: 0.05,
     secretHeaderEnv: RESEARCH_AUTH,
   },
+  {
+    name: "h_research_review",
+    get description() {
+      return (
+        `Paid ($${priceUsd("h_research_review")} USD). Review a document you have ALREADY extracted to plain ` +
+        "TEXT (send the text, never a raw file). Returns { answer, disclaimers, receipt }: a doc-grounded " +
+        "summary, key points, and things to watch for, with consumer-safety disclaimers where a domain " +
+        "(medical, financial, legal, tax, veterinary) calls for one, and a bundled H-Seal receipt FREE. Pass " +
+        "content (required, the document text), an optional question about it, an optional asOf timestamp, and " +
+        "an x402 payment_signature."
+      );
+    },
+    inputSchema: {
+      type: "object",
+      properties: {
+        content: {
+          type: "string",
+          description: "The document text to review. Extract the file to text yourself; do not send a raw file.",
+        },
+        question: { type: "string", description: "Optional specific question about the document." },
+        asOf: asOfProp,
+        payment_signature: { type: "string", description: "x402 payment header (base64)." },
+      },
+      required: ["content"],
+      additionalProperties: false,
+    },
+    method: "POST",
+    path: "/research/review",
+    authMode: "inline_x402",
+    bodyFromArgs: true,
+    priceUsd: 0.1,
+    secretHeaderEnv: RESEARCH_AUTH,
+  },
 ];
 
 // The H-Agent service def. The research tools are always part of the static

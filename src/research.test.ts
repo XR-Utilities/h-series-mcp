@@ -23,18 +23,19 @@ import { isToolEnabled, listEnabledTools } from "./services/index.js";
 import { priceCents, priceUsd, resetPricesForTest } from "./prices.js";
 import { validateArgs } from "./argcheck.js";
 
-// The four tools + their contracted prices (USD cents). This is the FINANCIAL
-// contract: h_research 5c, blogify 200c (full post), report 400c (deep), calendar 5c.
+// The tools + their contracted prices (USD cents). This is the FINANCIAL contract:
+// h_research 5c, blogify 200c (full post), report 400c (deep), calendar 5c, review 10c (doc review).
 const EXPECTED = [
   { name: "h_research", cents: 5, path: "/research/answer" },
   { name: "h_research_blogify", cents: 200, path: "/research/blogify" },
   { name: "h_research_report", cents: 400, path: "/research/report" },
   { name: "h_research_calendar", cents: 5, path: "/research/calendar" },
+  { name: "h_research_review", cents: 10, path: "/research/review" },
 ] as const;
 
-test("the H-Agent service carries the four research tools with the right routes + auth", () => {
+test("the H-Agent service carries the research tools with the right routes + auth", () => {
   const names = hAgent.tools.map((t) => t.name).sort();
-  assert.deepEqual(names, ["h_research", "h_research_blogify", "h_research_calendar", "h_research_report"]);
+  assert.deepEqual(names, ["h_research", "h_research_blogify", "h_research_calendar", "h_research_report", "h_research_review"]);
   for (const spec of EXPECTED) {
     const tool = hAgent.tools.find((t) => t.name === spec.name)!;
     assert.ok(tool, `${spec.name} present`);

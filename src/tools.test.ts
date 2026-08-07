@@ -25,7 +25,7 @@ const METHODS = new Set(["GET", "POST", "PUT", "DELETE", "PATCH"]);
 // Path placeholders: {param} or {param*} (the trailing * preserves slashes).
 const PLACEHOLDER_RE = /\{([a-zA-Z0-9_]+)\*?\}/g;
 
-test("ALL_TOOLS holds the full, non-empty tool surface (50 tools)", () => {
+test("ALL_TOOLS holds the full, non-empty tool surface (51 tools)", () => {
   assert.ok(Array.isArray(ALL_TOOLS), "ALL_TOOLS is an array");
   assert.ok(ALL_TOOLS.length > 0, "ALL_TOOLS is non-empty");
   // Computed from the live count, not hard-coded to a magic number that drifts.
@@ -33,7 +33,7 @@ test("ALL_TOOLS holds the full, non-empty tool surface (50 tools)", () => {
   // ALL_TOOLS is the full STATIC surface (gate open or shut). The four H-Agent
   // research tools are included here even though they are only ADVERTISED when
   // RESEARCH_SERVICE_SECRET is set (see listEnabledTools / isToolEnabled).
-  assert.equal(ALL_TOOLS.length, 50, "tool count is 50; update this if the surface changes");
+  assert.equal(ALL_TOOLS.length, 51, "tool count is 51; update this if the surface changes");
 });
 
 test("no duplicate tool names across services", () => {
