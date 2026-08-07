@@ -241,12 +241,13 @@ export async function dispatchTool(
     log.debug("tool call", { tool: toolName, service: service.id, ip: opts.callerIp });
   }
 
-  // Run the request. The MCP SDK gives us 30+ seconds of headroom on
-  // most clients; we cap at 60s here so an upstream stall surfaces as
-  // a timeout error instead of hanging the MCP session forever.
+  // Run the request. The MCP SDK gives us 30+ seconds of headroom on most clients; we cap here so an
+  // upstream stall surfaces as a timeout error instead of hanging the MCP session forever. 90s (under the
+  // ~100s CF edge cap) to accommodate the slowest tool, h_research_report (a deep multi-thousand-token
+  // generation); most tools answer in well under a second.
   const startedAt = Date.now();
   const ctl = new AbortController();
-  const timeoutId = setTimeout(() => ctl.abort(), 60_000);
+  const timeoutId = setTimeout(() => ctl.abort(), 90_000);
   let res: Response;
   try {
     res = await fetch(url, { method: tool.method, headers, body, signal: ctl.signal });
